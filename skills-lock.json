@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "skills": {
+    "brandkit": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/brandkit/SKILL.md",
+      "computedHash": "735007879f5110aeae1e981a53fe74a12afde70347f9773dacd50e4697a091bf"
+    },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "f38f464c20d30af4c90314b218d9de5b5e1375416967228da71114ef1b1860a7"
+    },
+    "design-taste-frontend-v1": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill-v1/SKILL.md",
+      "computedHash": "8d59c96751feacf88f341a43151eae6f4fd748978884c4552293b8841573d776"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "full-output-enforcement": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/output-skill/SKILL.md",
+      "computedHash": "524f7c7950c3fde726101613f630140411c7d080e63be718687f4b38f919be81"
+    },
+    "gpt-taste": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/gpt-tasteskill/SKILL.md",
+      "computedHash": "7bd1bfdda0e51016ca222693401a65fc0dd9bf9487e0bd5b1740ba510f6f963a"
+    },
+    "langchain-rag": {
+      "source": "langchain-ai/langchain-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/langchain-rag/SKILL.md",
+      "computedHash": "ebdbd5a7c2c190d3e5a44a2522949867cc211641af1925e086a0250aaf392da3"
+    },
+    "nestjs-best-practices": {
+      "source": "kadajett/agent-nestjs-skills",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "68658903272e1015f3ec5084c7d0988216a47f42f675ed819a675250fc6a23cd"
+    },
+    "next-best-practices": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "skillPath": "skills/next-best-practices/SKILL.md",
+      "computedHash": "f4678aef4ffc10a5ea64a91e57abe5a5081af813b06d58d565caf3e8ef56e26c"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "f0fdd03f4755cbb3b57e20fe6fd4a97c00d34e6780187b6559316986e8d848db"
+    }
+  }
+}

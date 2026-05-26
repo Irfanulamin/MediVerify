@@ -1,0 +1,93 @@
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.*
+!.env.example
+
+# ========================
+# Node / npm / yarn
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ========================
+# Build Outputs
+# ========================
+dist/
+build/
+out/
+
+# Next.js
+.next/
+next-env.d.ts
+
+# TypeScript
+*.tsbuildinfo
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+.mypy_cache/
+.ruff_cache/
+
+# ========================
+# Testing & Coverage
+# ========================
+coverage/
+.nyc_output/
+*.lcov
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log
+
+# ========================
+# OS & Editor
+# ========================
+.DS_Store
+Thumbs.db
+*.pem
+
+# IDE
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+
+# ========================
+# Misc
+# ========================
+.vercel
+
+# ========================
+# Project-specific
+# ========================
+openspec/
+.claude/

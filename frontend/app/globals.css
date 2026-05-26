@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ────────────────────────────────────────────────────────── */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-instrument-serif);
+}
+
+:root {
+  --background: #fafafa;
+  --foreground: #0c0c0e;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --card: #f4f4f5;
+  --accent: #6d28d9;
+  --accent-foreground: #ffffff;
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────────── */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ─── Utility classes (referenced by components) ───────────────────────────── */
+
+/* Floating glass nav */
+.glass {
+  background: rgba(250, 250, 250, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border);
+}
+
+/* Soft shadow */
+.shadow-soft {
+  box-shadow: 0 4px 24px 0 rgba(12, 12, 14, 0.07),
+    0 1px 4px 0 rgba(12, 12, 14, 0.04);
+}
+
+/* Smooth transition */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hero gradient background */
+.bg-hero-gradient {
+  background: radial-gradient(
+    ellipse 80% 60% at 50% -10%,
+    rgba(109, 40, 217, 0.08) 0%,
+    transparent 60%
+  );
+}
+
+/* Display font helper */
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* Glass card — content cards (features, testimonials) */
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(12, 12, 14, 0.08),
+    0 1px 2px rgba(12, 12, 14, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Glass surface — lighter overlays (hero card, badges, step numbers) */
+.glass-surface {
+  background: rgba(250, 250, 250, 0.6);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Mesh gradient — landing page background depth for glass to read */
+.bg-mesh {
+  background:
+    radial-gradient(ellipse 70% 40% at 15% 20%, rgba(109, 40, 217, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 60%, rgba(59, 130, 246, 0.05) 0%, transparent 60%),
+    var(--background);
+}
+
+/* Fade-up CSS animation (used outside framer-motion for nav/static) */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─── Bengali language overrides ───────────────────────────────────────────── */
+html[data-lang="bn"] body {
+  font-family: var(--font-bengali), system-ui, sans-serif;
+}
+
+html[data-lang="bn"] .font-display {
+  font-family: var(--font-bengali), system-ui, sans-serif;
+  font-style: normal;
+}
+
+/* Bengali script doesn't use italic — keep display upright */
+html[data-lang="bn"] .italic {
+  font-style: normal;
+}
