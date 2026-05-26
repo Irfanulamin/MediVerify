@@ -50,7 +50,7 @@ export default function Footer() {
             </div>
             <ul className="space-y-2.5 text-sm">
               {col.links.map(([label, href]) => (
-                <li key={href}>
+                <li key={label}>
                   <a href={href} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-smooth">
                     <AnimatePresence mode="wait">
                       <motion.span key={label} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
