@@ -11,10 +11,10 @@ export class VerificationService {
       process.env.PYTHON_SERVICE_URL ?? 'http://localhost:8000';
   }
 
-  async verify(query: string) {
+  async verify(query: string, image?: string) {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(`${this.pythonServiceUrl}/verify`, { query }),
+        this.httpService.post(`${this.pythonServiceUrl}/verify`, { query, image }),
       );
       return response.data;
     } catch {

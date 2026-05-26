@@ -1,144 +1,275 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, Clock, X } from "lucide-react";
 import axios from "axios";
-import { ShieldCheck, LogOut, Home } from "lucide-react";
+import toast from "react-hot-toast";
+import { ResultCard } from "@/app/components/dashboard/ResultCard";
+import { VoiceInput } from "@/app/components/dashboard/VoiceInput";
+import { useLanguage } from "@/lib/i18n";
+
+interface VerifyResult {
+  result: "VERIFIED" | "SUSPICIOUS" | "UNKNOWN";
+  medicineName?: string;
+  genericName?: string;
+  manufacturer?: string;
+  trustScore?: number;
+  fakeIndicators?: string[];
+  safeAlternatives?: string[];
+  explanation?: string;
+}
+
+const RECENT_KEY = "mv_recent_searches";
+const MAX_RECENT = 5;
+
+function loadRecent(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(query: string) {
+  const prev = loadRecent().filter((q) => q !== query);
+  localStorage.setItem(RECENT_KEY, JSON.stringify([query, ...prev].slice(0, MAX_RECENT)));
+}
 
 export default function DashboardPage() {
-  const router = useRouter();
+  const { t } = useLanguage();
+  const [tab, setTab] = useState<"text" | "image">("text");
   const [query, setQuery] = useState("");
-  const [result, setResult] = useState<{ result: string; explanation: string } | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [result, setResult] = useState<VerifyResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [recent, setRecent] = useState<string[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("mv_token");
-    if (!token) {
-      router.replace("/login");
-    }
-  }, [router]);
+    setRecent(loadRecent());
+  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("mv_token");
-    router.push("/login");
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const runVerify = async (q: string, img?: string) => {
     setLoading(true);
-    setError("");
     setResult(null);
     try {
       const token = localStorage.getItem("mv_token");
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/verify`,
-        { query },
+        { query: q, image: img },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setResult(res.data);
+      if (q) {
+        saveRecent(q);
+        setRecent(loadRecent());
+      }
     } catch {
-      setError("Verification failed. Make sure the verification service is running.");
+      toast.error(t.dashboard.errorGeneric);
     } finally {
       setLoading(false);
     }
   };
 
-  const resultStyle: Record<string, string> = {
-    VERIFIED: "text-emerald-700 border-emerald-200 bg-emerald-50",
-    SUSPICIOUS: "text-red-700 border-red-200 bg-red-50",
-    UNKNOWN: "text-amber-700 border-amber-200 bg-amber-50",
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    runVerify(query.trim());
+  };
+
+  const handleImageSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!imageFile || !imagePreview) return;
+    const base64 = imagePreview.split(",")[1];
+    runVerify("", base64);
   };
 
   return (
-    <div className="min-h-screen pt-20 px-4 py-8" style={{ background: "var(--background)" }}>
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-2">
-            <span className="size-8 rounded-lg bg-[var(--foreground)] grid place-items-center flex-shrink-0">
-              <ShieldCheck className="size-4 text-[var(--background)]" strokeWidth={2.5} />
-            </span>
-            <span className="font-medium text-sm text-[var(--foreground)]">MediVerify</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-[var(--muted-foreground)] text-sm hover:text-[var(--foreground)] transition-smooth"
-            >
-              <Home className="size-3.5" strokeWidth={1.6} />
-              Home
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 text-[var(--muted-foreground)] text-sm hover:text-[var(--foreground)] transition-smooth"
-            >
-              <LogOut className="size-3.5" strokeWidth={1.6} />
-              Sign out
-            </button>
-          </div>
-        </div>
+    <div>
+      <div className="mb-8">
+        <h1 className="font-display text-3xl md:text-4xl tracking-tight text-[var(--foreground)] mb-2">
+          {t.dashboard.medicineName}
+        </h1>
+        <p className="text-[var(--muted-foreground)] text-[15px]">
+          {t.dashboard.searchPlaceholder}
+        </p>
+      </div>
 
-        {/* Hero */}
-        <div className="mb-10">
-          <h1 className="font-display text-3xl md:text-4xl tracking-tight text-[var(--foreground)] mb-2">
-            Medicine Verification
-          </h1>
-          <p className="text-[var(--muted-foreground)] text-[15px]">
-            Enter a medicine name or describe it to verify its authenticity using AI.
-          </p>
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 rounded-xl bg-[var(--card)] w-fit mb-5">
+        {(["text", "image"] as const).map((t_) => (
+          <button
+            key={t_}
+            onClick={() => setTab(t_)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-smooth ${
+              tab === t_
+                ? "bg-[var(--background)] text-[var(--foreground)] shadow-soft"
+                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            {t_ === "text" ? t.dashboard.searchTab1 : t.dashboard.searchTab2}
+          </button>
+        ))}
+      </div>
 
-        {/* Verify form */}
-        <form
-          onSubmit={handleVerify}
-          className="glass-card rounded-2xl p-6 mb-6"
-        >
-          <label className="block text-[var(--muted-foreground)] text-xs mb-2">
-            Medicine name or description
-          </label>
-          <div className="flex gap-3">
+      {/* Text tab */}
+      <AnimatePresence mode="wait">
+        {tab === "text" && (
+          <motion.form
+            key="text"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 8 }}
+            transition={{ duration: 0.2 }}
+            onSubmit={handleTextSubmit}
+            className="glass-card rounded-2xl p-5 mb-6"
+          >
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t.dashboard.searchPlaceholder}
+                className="flex-1 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--accent)] transition-smooth text-sm"
+              />
+              <VoiceInput
+                onTranscript={(txt) => setQuery(txt)}
+                onSubmit={(txt) => runVerify(txt)}
+              />
+              <button
+                type="submit"
+                disabled={loading || !query.trim()}
+                className="px-5 py-3 rounded-xl text-sm font-medium bg-[var(--foreground)] text-[var(--background)] hover:opacity-85 transition-smooth disabled:opacity-40 whitespace-nowrap"
+              >
+                {loading ? t.dashboard.verifying : t.dashboard.verifyBtn}
+              </button>
+            </div>
+          </motion.form>
+        )}
+
+        {tab === "image" && (
+          <motion.form
+            key="image"
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.2 }}
+            onSubmit={handleImageSubmit}
+            className="glass-card rounded-2xl p-5 mb-6"
+          >
+            <div
+              className="border-2 border-dashed border-[var(--border)] rounded-xl p-8 text-center cursor-pointer hover:border-[var(--accent)] transition-smooth mb-4"
+              onClick={() => fileRef.current?.click()}
+            >
+              {imagePreview ? (
+                <div className="relative inline-block">
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="max-h-40 rounded-lg mx-auto"
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImageFile(null);
+                      setImagePreview(null);
+                    }}
+                    className="absolute -top-2 -right-2 size-6 rounded-full bg-[var(--foreground)] text-[var(--background)] grid place-items-center"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-[var(--muted-foreground)]">
+                  <Upload className="size-8 opacity-40" />
+                  <p className="text-sm">{t.dashboard.uploadLabel}</p>
+                </div>
+              )}
+            </div>
             <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. Paracetamol 500mg, Napa Extra, white round tablet…"
-              className="flex-1 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--accent)] transition-smooth text-sm"
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
             />
             <button
               type="submit"
-              disabled={loading}
-              className="px-6 py-3 rounded-xl text-sm font-medium bg-[var(--foreground)] text-[var(--background)] hover:opacity-85 transition-smooth disabled:opacity-50 whitespace-nowrap"
+              disabled={loading || !imageFile}
+              className="w-full px-5 py-3 rounded-xl text-sm font-medium bg-[var(--foreground)] text-[var(--background)] hover:opacity-85 transition-smooth disabled:opacity-40"
             >
-              {loading ? "Verifying…" : "Verify"}
+              {loading ? t.dashboard.verifying : t.dashboard.verifyBtn}
             </button>
-          </div>
-        </form>
-
-        {/* Error */}
-        {error && (
-          <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
-            {error}
-          </div>
+          </motion.form>
         )}
+      </AnimatePresence>
 
-        {/* Result */}
-        {result && (
-          <div
-            className={`rounded-2xl border p-6 ${resultStyle[result.result] ?? resultStyle.UNKNOWN}`}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-semibold uppercase tracking-widest opacity-60">
-                Verdict
-              </span>
-              <span className="font-medium text-lg">{result.result}</span>
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="rounded-2xl border border-[var(--border)] p-6 mb-6 animate-pulse">
+          <div className="flex gap-4">
+            <div className="flex-1 space-y-3">
+              <div className="h-4 bg-[var(--card)] rounded w-1/3" />
+              <div className="h-3 bg-[var(--card)] rounded w-2/3" />
+              <div className="h-3 bg-[var(--card)] rounded w-1/2" />
             </div>
-            <p className="text-sm leading-relaxed opacity-80">{result.explanation}</p>
+            <div className="size-[120px] rounded-full bg-[var(--card)]" />
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Result */}
+      {result && !loading && (
+        <div className="mb-8">
+          <ResultCard
+            data={result}
+            onAlternativeClick={(name) => {
+              setQuery(name);
+              setTab("text");
+              runVerify(name);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Recent searches */}
+      {recent.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="size-4 text-[var(--muted-foreground)]" />
+            <p className="text-sm font-medium text-[var(--muted-foreground)]">
+              {t.dashboard.recentSearches}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {recent.map((q) => (
+              <button
+                key={q}
+                onClick={() => {
+                  setQuery(q);
+                  setTab("text");
+                  runVerify(q);
+                }}
+                className="text-sm px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-smooth"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

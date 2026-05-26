@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { VerificationModule } from './verification/verification.module';
+import { MedicinesModule } from './medicines/medicines.module';
+import { AlertsModule } from './alerts/alerts.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -12,6 +15,9 @@ import { VerificationModule } from './verification/verification.module';
     ),
     AuthModule,
     VerificationModule,
+    MedicinesModule,
+    AlertsModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
