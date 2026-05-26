@@ -1,0 +1,452 @@
+[
+  {
+    "name": "Napa Extra",
+    "genericName": "Paracetamol + Caffeine",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Headache", "Migraine", "Cold symptoms", "Fever with fatigue"],
+    "sideEffects": ["Insomnia", "Palpitations", "Liver risk in overdose", "Restlessness"],
+    "fakeIndicators": ["Missing Beximco branding", "No batch number on strip", "Wrong font on blister", "Tablet color off-white instead of white"],
+    "safeAlternatives": ["Ace Plus", "Paracetamol 500mg generic", "Napa 500mg"]
+  },
+  {
+    "name": "Napa 500mg",
+    "genericName": "Paracetamol",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Pain relief", "Fever reduction", "Headache", "Body ache"],
+    "sideEffects": ["Liver damage in overdose", "Nausea at high doses"],
+    "fakeIndicators": ["Missing Beximco logo", "Poor blister print quality", "Tablet color slightly off-white", "No expiry date on strip"],
+    "safeAlternatives": ["Ace 500mg", "Paracetamol generic", "Tylenol"]
+  },
+  {
+    "name": "Amodis 400mg",
+    "genericName": "Metronidazole",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Bacterial infections", "Parasitic infections", "Amoebic dysentery", "Giardiasis"],
+    "sideEffects": ["Nausea", "Metallic taste", "Dizziness", "Peripheral neuropathy"],
+    "fakeIndicators": ["Tablet does not have score line", "Packaging color faded", "No batch number", "Missing Square Pharmaceuticals seal"],
+    "safeAlternatives": ["Metronidazole generic", "Flagyl", "Metro 400mg"]
+  },
+  {
+    "name": "Seclo 20mg",
+    "genericName": "Omeprazole",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Acid reflux", "Peptic ulcer", "GERD", "H. pylori eradication"],
+    "sideEffects": ["Headache", "Diarrhea", "Abdominal pain", "Vitamin B12 deficiency long-term"],
+    "fakeIndicators": ["Capsule discolored", "No Square Pharmaceuticals seal", "Wrong capsule size", "No expiry on blister"],
+    "safeAlternatives": ["Omeprazole generic", "Losectil 20mg", "Omez 20mg"]
+  },
+  {
+    "name": "Ciprocin 500mg",
+    "genericName": "Ciprofloxacin",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Typhoid", "UTI", "Respiratory infections", "Bacterial diarrhea"],
+    "sideEffects": ["Nausea", "Dizziness", "Tendon damage (rare)", "Photosensitivity"],
+    "fakeIndicators": ["Tablet color not bright white", "No Square branding on strip", "Imprint blurred", "Packaging seal broken"],
+    "safeAlternatives": ["Ciprofloxacin generic", "Cifran 500mg", "Cipro 500mg"]
+  },
+  {
+    "name": "Losectil 20mg",
+    "genericName": "Omeprazole",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Gastric ulcer", "GERD", "H. pylori eradication", "Erosive esophagitis"],
+    "sideEffects": ["Headache", "Diarrhea", "Nausea", "Flatulence"],
+    "fakeIndicators": ["Capsule color inconsistent", "Incepta branding missing", "No expiry embossed", "Wrong capsule shell color"],
+    "safeAlternatives": ["Seclo 20mg", "Omeprazole generic", "Protonix 20mg"]
+  },
+  {
+    "name": "Ace 500mg",
+    "genericName": "Paracetamol",
+    "manufacturer": "Drug International",
+    "uses": ["Pain relief", "Fever", "Headache", "Toothache"],
+    "sideEffects": ["Liver damage in overdose", "Allergic skin reactions (rare)"],
+    "fakeIndicators": ["No Drug International logo", "Tablet surface pitting", "Missing batch code", "Faded blister printing"],
+    "safeAlternatives": ["Napa 500mg", "Paracetamol generic", "Tylenol 500mg"]
+  },
+  {
+    "name": "Ace Plus",
+    "genericName": "Paracetamol + Caffeine",
+    "manufacturer": "Drug International",
+    "uses": ["Headache with fatigue", "Migraine", "Cold with body ache"],
+    "sideEffects": ["Insomnia", "Palpitations", "Liver risk in overdose"],
+    "fakeIndicators": ["No Drug International seal", "Tablet coating uneven", "Wrong shade of white", "No schedule info"],
+    "safeAlternatives": ["Napa Extra", "Paracetamol + Caffeine generic"]
+  },
+  {
+    "name": "Tycil 500mg",
+    "genericName": "Amoxicillin",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Bacterial infections", "Respiratory tract infections", "Ear infections", "Urinary tract infections"],
+    "sideEffects": ["Diarrhea", "Rash", "Allergic reactions", "Nausea"],
+    "fakeIndicators": ["Powder leaking from capsule", "Discoloration", "No Incepta seal", "Missing lot number"],
+    "safeAlternatives": ["Amoxicillin generic", "Moxacil 500mg", "Amoxil 500mg"]
+  },
+  {
+    "name": "Moxacil 500mg",
+    "genericName": "Amoxicillin",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Bacterial infections", "Tonsillitis", "Pneumonia", "Sinusitis"],
+    "sideEffects": ["Diarrhea", "Nausea", "Rash", "Allergic reactions"],
+    "fakeIndicators": ["Capsule color wrong (should be red-white)", "No Square branding", "Powder lumpy inside", "No batch number"],
+    "safeAlternatives": ["Amoxicillin generic", "Tycil 500mg", "Amoxil 500mg"]
+  },
+  {
+    "name": "Azithro 250mg",
+    "genericName": "Azithromycin",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Respiratory infections", "Skin infections", "STIs", "Community-acquired pneumonia"],
+    "sideEffects": ["Nausea", "Diarrhea", "Cardiac arrhythmia (rare)", "Abdominal pain"],
+    "fakeIndicators": ["Coating peels unevenly", "Inconsistent tablet weight", "Spelling errors on packaging", "No Beximco hologram"],
+    "safeAlternatives": ["Zithromax 250mg", "Azicin 250mg", "Azithromycin generic"]
+  },
+  {
+    "name": "Atorva 10mg",
+    "genericName": "Atorvastatin",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["High cholesterol", "Cardiovascular disease prevention", "Triglyceride reduction"],
+    "sideEffects": ["Muscle pain", "Liver enzyme elevation", "Headache", "Digestive problems"],
+    "fakeIndicators": ["Irregular shape", "Chalk-like texture", "Missing hologram sticker", "No Beximco seal"],
+    "safeAlternatives": ["Lipitor 10mg", "Atova 10mg", "Atorvastatin generic"]
+  },
+  {
+    "name": "Dianel 5mg",
+    "genericName": "Amlodipine",
+    "manufacturer": "Drug International",
+    "uses": ["High blood pressure", "Angina", "Coronary artery disease"],
+    "sideEffects": ["Ankle swelling", "Flushing", "Headache", "Fatigue"],
+    "fakeIndicators": ["Tablet sticks together in pack", "Packaging lacks trademark symbol", "Color inconsistent", "No score line"],
+    "safeAlternatives": ["Amlodipine generic", "Amlovas 5mg", "Norvasc 5mg"]
+  },
+  {
+    "name": "Glucomin 500mg",
+    "genericName": "Metformin HCl",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Type 2 diabetes", "Blood sugar control", "Insulin resistance"],
+    "sideEffects": ["Nausea", "Diarrhea", "Lactic acidosis (rare)", "Vitamin B12 deficiency"],
+    "fakeIndicators": ["Uneven tablet size", "No score line", "Faded imprint", "Missing Square seal"],
+    "safeAlternatives": ["Metformin generic", "Diaformin 500mg", "Glucophage 500mg"]
+  },
+  {
+    "name": "Diaformin 500mg",
+    "genericName": "Metformin HCl",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Type 2 diabetes", "PCOS management", "Prediabetes"],
+    "sideEffects": ["Nausea", "Diarrhea", "Metallic taste", "Abdominal discomfort"],
+    "fakeIndicators": ["Tablet crumbles", "No Incepta branding", "Missing expiry embossed", "Wrong tablet shape"],
+    "safeAlternatives": ["Glucomin 500mg", "Metformin generic", "Glucophage 500mg"]
+  },
+  {
+    "name": "Renin 5mg",
+    "genericName": "Ramipril",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Hypertension", "Heart failure", "Post-MI protection", "Diabetic nephropathy"],
+    "sideEffects": ["Dry cough", "Dizziness", "Hyperkalemia", "Angioedema (rare)"],
+    "fakeIndicators": ["Capsule color wrong (should be orange-white)", "No Beximco branding", "Weight inconsistent", "Missing registered trademark"],
+    "safeAlternatives": ["Ramipril generic", "Tritace 5mg", "Altace 5mg"]
+  },
+  {
+    "name": "Atrovent Inhaler",
+    "genericName": "Ipratropium Bromide",
+    "manufacturer": "Boehringer Ingelheim",
+    "uses": ["COPD", "Chronic bronchitis", "Emphysema", "Bronchospasm"],
+    "sideEffects": ["Dry mouth", "Constipation", "Urinary retention", "Blurred vision"],
+    "fakeIndicators": ["No Boehringer Ingelheim branding", "Dose counter absent", "Inhaler nozzle wrong color", "Canister lightweight"],
+    "safeAlternatives": ["Combivent", "Ipratropium generic inhaler", "Spiriva"]
+  },
+  {
+    "name": "Ventolin Inhaler 100mcg",
+    "genericName": "Salbutamol",
+    "manufacturer": "GlaxoSmithKline",
+    "uses": ["Asthma", "COPD", "Bronchospasm relief", "Exercise-induced bronchospasm"],
+    "sideEffects": ["Tremor", "Palpitations", "Headache", "Hypokalemia"],
+    "fakeIndicators": ["Inhaler nozzle color wrong (should be blue)", "Canister weight too light", "No dose counter", "No GSK hologram"],
+    "safeAlternatives": ["Asthalin 100mcg", "Salbutamol generic inhaler", "Proventil HFA"]
+  },
+  {
+    "name": "Asthalin 100mcg",
+    "genericName": "Salbutamol",
+    "manufacturer": "Cipla",
+    "uses": ["Asthma", "Bronchospasm", "COPD", "Acute breathing difficulty"],
+    "sideEffects": ["Tremor", "Tachycardia", "Headache", "Nervousness"],
+    "fakeIndicators": ["Blue nozzle cap missing", "No Cipla logo on canister", "Inhaler body cracked", "No lot number"],
+    "safeAlternatives": ["Ventolin 100mcg", "Salbutamol generic", "Proair HFA"]
+  },
+  {
+    "name": "Predni 5mg",
+    "genericName": "Prednisolone",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Inflammatory conditions", "Asthma", "Autoimmune diseases", "Allergic reactions"],
+    "sideEffects": ["Weight gain", "Immunosuppression", "Osteoporosis (long-term)", "Blood sugar elevation"],
+    "fakeIndicators": ["Tablet crumbles", "No debossed dosage", "Poor print quality", "Missing Square seal"],
+    "safeAlternatives": ["Prednisolone generic", "Deltacortril 5mg", "Meticortelone 5mg"]
+  },
+  {
+    "name": "Amitril 25mg",
+    "genericName": "Amitriptyline HCl",
+    "manufacturer": "Drug International",
+    "uses": ["Depression", "Neuropathic pain", "Migraine prevention", "Insomnia"],
+    "sideEffects": ["Drowsiness", "Dry mouth", "Constipation", "Cardiac effects"],
+    "fakeIndicators": ["Tablet coating uneven", "No scored line", "Packaging lacks schedule info", "No Drug International logo"],
+    "safeAlternatives": ["Amitriptyline generic", "Elavil 25mg", "Tryptanol 25mg"]
+  },
+  {
+    "name": "Diazem 5mg",
+    "genericName": "Diazepam",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Anxiety", "Muscle spasms", "Seizure management", "Alcohol withdrawal"],
+    "sideEffects": ["Drowsiness", "Dependence", "Cognitive impairment", "Respiratory depression"],
+    "fakeIndicators": ["Blister pack seal broken easily", "Tablet crumbles", "No schedule marking on packaging", "No Incepta seal"],
+    "safeAlternatives": ["Diazepam generic", "Valium 5mg", "Seduxen 5mg"]
+  },
+  {
+    "name": "Flucanix 150mg",
+    "genericName": "Fluconazole",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Candidiasis", "Cryptococcal meningitis", "Fungal infections", "Vaginal yeast infection"],
+    "sideEffects": ["Nausea", "Headache", "Hepatotoxicity (rare)", "Rash"],
+    "fakeIndicators": ["Capsule weight inconsistent", "No Beximco code", "Broken foil seal", "Wrong capsule color"],
+    "safeAlternatives": ["Fluconazole generic", "Diflucan 150mg", "Flucoral 150mg"]
+  },
+  {
+    "name": "Losecon 50mg",
+    "genericName": "Losartan Potassium",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Hypertension", "Heart failure", "Diabetic nephropathy", "Stroke prevention"],
+    "sideEffects": ["Dizziness", "Hyperkalemia", "Upper respiratory infection", "Hypotension"],
+    "fakeIndicators": ["Tablet color inconsistent", "Missing hologram", "No registered trademark", "Score line absent"],
+    "safeAlternatives": ["Losartan generic", "Cozaar 50mg", "Losacar 50mg"]
+  },
+  {
+    "name": "Glimep 2mg",
+    "genericName": "Glimepiride",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Type 2 diabetes", "Blood sugar lowering", "Insulin secretagogue"],
+    "sideEffects": ["Hypoglycemia", "Weight gain", "Nausea", "Dizziness"],
+    "fakeIndicators": ["Tablet size variation", "No embossed G-2 marking", "Wrong hue of pink", "No Incepta logo"],
+    "safeAlternatives": ["Glimepiride generic", "Amaryl 2mg", "Glimpid 2mg"]
+  },
+  {
+    "name": "Panto 40mg",
+    "genericName": "Pantoprazole Sodium",
+    "manufacturer": "Drug International",
+    "uses": ["GERD", "Erosive esophagitis", "Zollinger-Ellison syndrome", "Peptic ulcer"],
+    "sideEffects": ["Headache", "Diarrhea", "Abdominal pain", "Nausea"],
+    "fakeIndicators": ["Enteric coating missing", "Tablet disintegrates in hand", "Packaging seal peeled", "No Drug International branding"],
+    "safeAlternatives": ["Pantoprazole generic", "Protonix 40mg", "Controloc 40mg"]
+  },
+  {
+    "name": "Clopid 75mg",
+    "genericName": "Clopidogrel",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Heart attack prevention", "Stroke prevention", "ACS management", "Peripheral artery disease"],
+    "sideEffects": ["Bleeding risk", "Bruising", "Gastrointestinal upset", "Rash"],
+    "fakeIndicators": ["Tablet color not standard pink", "No debossed marking", "Tamper evident missing", "No Beximco branding"],
+    "safeAlternatives": ["Clopidogrel generic", "Plavix 75mg", "Clopilet 75mg"]
+  },
+  {
+    "name": "Doxy 100mg",
+    "genericName": "Doxycycline Hyclate",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Bacterial infections", "Malaria prophylaxis", "Acne", "Lyme disease"],
+    "sideEffects": ["Photosensitivity", "Nausea", "Esophageal irritation", "Tooth discoloration in children"],
+    "fakeIndicators": ["Capsule color not standard yellow", "Brown-discolored powder", "No manufacturer info on strip", "Missing lot number"],
+    "safeAlternatives": ["Doxycycline generic", "Vibramycin 100mg", "Doxylin 100mg"]
+  },
+  {
+    "name": "Folic 5mg",
+    "genericName": "Folic Acid",
+    "manufacturer": "Drug International",
+    "uses": ["Folate deficiency", "Pregnancy supplementation", "Megaloblastic anemia", "Neural tube defect prevention"],
+    "sideEffects": ["Rare at normal doses", "Nausea at high doses", "May mask B12 deficiency"],
+    "fakeIndicators": ["Tablet color inconsistent yellow", "No expiry on individual strip", "Packaging lacks dosage info", "Wrong tablet size"],
+    "safeAlternatives": ["Folic Acid generic", "Folate 5mg", "Folicare 5mg"]
+  },
+  {
+    "name": "Atenol 50mg",
+    "genericName": "Atenolol",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Hypertension", "Angina", "Heart rate control", "Post-MI management"],
+    "sideEffects": ["Fatigue", "Cold extremities", "Bradycardia", "Depression"],
+    "fakeIndicators": ["Tablet lacks score line", "No Incepta embossing", "Packaging seal broken", "Missing registered trademark"],
+    "safeAlternatives": ["Atenolol generic", "Tenormin 50mg", "Aten 50mg"]
+  },
+  {
+    "name": "Rabecon 20mg",
+    "genericName": "Rabeprazole Sodium",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["GERD", "Peptic ulcer", "H. pylori treatment", "Duodenal ulcer"],
+    "sideEffects": ["Headache", "Diarrhea", "Flatulence", "Abdominal pain"],
+    "fakeIndicators": ["Enteric coating absent", "Capsule discolored", "Missing product code on blister", "No Square seal"],
+    "safeAlternatives": ["Rabeprazole generic", "Aciphex 20mg", "Razo 20mg"]
+  },
+  {
+    "name": "Cetrizin 10mg",
+    "genericName": "Cetirizine HCl",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Allergic rhinitis", "Urticaria", "Hay fever", "Chronic idiopathic urticaria"],
+    "sideEffects": ["Drowsiness", "Dry mouth", "Headache", "Fatigue"],
+    "fakeIndicators": ["Tablet size inconsistent", "No scored line", "Packaging font differs from original", "No Beximco logo"],
+    "safeAlternatives": ["Cetirizine generic", "Zirtec 10mg", "Aller-C 10mg"]
+  },
+  {
+    "name": "Insulin Mixtard 30/70",
+    "genericName": "Biphasic Isophane Insulin",
+    "manufacturer": "Novo Nordisk",
+    "uses": ["Type 1 diabetes", "Type 2 diabetes", "Gestational diabetes"],
+    "sideEffects": ["Hypoglycemia", "Injection site reactions", "Weight gain", "Lipodystrophy"],
+    "fakeIndicators": ["Vial suspension not uniform cloudy", "No cold chain seal", "Expiry print quality poor", "No Novo Nordisk hologram"],
+    "safeAlternatives": ["Mixtard 30/70 (Novo Nordisk only)", "Humulin 70/30", "Insulin generic"]
+  },
+  {
+    "name": "Insulin Actrapid 100IU",
+    "genericName": "Human Insulin Regular",
+    "manufacturer": "Novo Nordisk",
+    "uses": ["Type 1 diabetes", "Type 2 diabetes management", "Diabetic ketoacidosis"],
+    "sideEffects": ["Hypoglycemia", "Injection site reactions", "Hypokalemia", "Weight gain"],
+    "fakeIndicators": ["Vial cloudy when should be clear", "No Novo Nordisk branding", "Cap seal broken", "Expiry embossing absent"],
+    "safeAlternatives": ["Humulin R", "Regular insulin generic", "Insulin Actrapid (Novo Nordisk only)"]
+  },
+  {
+    "name": "Metop 50mg",
+    "genericName": "Metoprolol Tartrate",
+    "manufacturer": "Drug International",
+    "uses": ["Hypertension", "Angina", "Heart failure", "Arrhythmia"],
+    "sideEffects": ["Fatigue", "Bradycardia", "Dizziness", "Cold hands and feet"],
+    "fakeIndicators": ["Tablet surface rough", "Score line missing", "No Drug International logo", "Packaging seal easily peeled"],
+    "safeAlternatives": ["Metoprolol generic", "Lopressor 50mg", "Betaloc 50mg"]
+  },
+  {
+    "name": "Valsil 80mg",
+    "genericName": "Valsartan",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Hypertension", "Heart failure", "Post-MI left ventricular dysfunction"],
+    "sideEffects": ["Dizziness", "Hyperkalemia", "Renal impairment", "Fatigue"],
+    "fakeIndicators": ["Tablet coating uneven", "No Incepta branding", "Oval shape wrong", "Missing lot number"],
+    "safeAlternatives": ["Valsartan generic", "Diovan 80mg", "Valtan 80mg"]
+  },
+  {
+    "name": "Rosavin 10mg",
+    "genericName": "Rosuvastatin",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["High cholesterol", "LDL reduction", "Cardiovascular risk reduction", "Triglycerides"],
+    "sideEffects": ["Muscle pain", "Liver enzyme elevation", "Headache", "Abdominal pain"],
+    "fakeIndicators": ["Tablet shape not round-pink", "No Beximco hologram", "Missing registered trademark", "Score line absent"],
+    "safeAlternatives": ["Rosuvastatin generic", "Crestor 10mg", "Rosuvas 10mg"]
+  },
+  {
+    "name": "Montek 10mg",
+    "genericName": "Montelukast Sodium",
+    "manufacturer": "Drug International",
+    "uses": ["Asthma maintenance", "Allergic rhinitis", "Exercise-induced bronchoconstriction"],
+    "sideEffects": ["Headache", "Abdominal pain", "Behavioral changes (children)", "Insomnia"],
+    "fakeIndicators": ["Tablet beige color wrong (should be standard)", "No Drug International seal", "Chewable tablet too hard", "Missing lot number"],
+    "safeAlternatives": ["Montelukast generic", "Singulair 10mg", "Montair 10mg"]
+  },
+  {
+    "name": "Levotab 50mcg",
+    "genericName": "Levothyroxine Sodium",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Hypothyroidism", "Thyroid hormone replacement", "Goiter treatment"],
+    "sideEffects": ["Palpitations", "Weight loss", "Insomnia", "Tremor if overdosed"],
+    "fakeIndicators": ["Tablet size inconsistent", "No Square Pharmaceuticals seal", "Missing dose imprint", "Packaging seal broken"],
+    "safeAlternatives": ["Levothyroxine generic", "Synthroid 50mcg", "Eltroxin 50mcg"]
+  },
+  {
+    "name": "Gabatol 300mg",
+    "genericName": "Gabapentin",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Neuropathic pain", "Epilepsy", "Post-herpetic neuralgia", "Restless leg syndrome"],
+    "sideEffects": ["Drowsiness", "Dizziness", "Weight gain", "Ataxia"],
+    "fakeIndicators": ["Capsule color not white", "Powder inside lumpy", "No Incepta logo", "Missing schedule marking"],
+    "safeAlternatives": ["Gabapentin generic", "Neurontin 300mg", "Gabapin 300mg"]
+  },
+  {
+    "name": "Esomep 20mg",
+    "genericName": "Esomeprazole Magnesium",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["GERD", "Erosive esophagitis", "Peptic ulcer", "H. pylori eradication"],
+    "sideEffects": ["Headache", "Diarrhea", "Nausea", "Abdominal pain"],
+    "fakeIndicators": ["Capsule color not standard purple", "No Beximco branding", "Enteric pellets missing coating", "Wrong capsule size"],
+    "safeAlternatives": ["Esomeprazole generic", "Nexium 20mg", "Esotrex 20mg"]
+  },
+  {
+    "name": "Fenox 200mg",
+    "genericName": "Ibuprofen",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Pain relief", "Fever", "Inflammation", "Dysmenorrhea"],
+    "sideEffects": ["Gastrointestinal bleeding", "Kidney damage", "Hypertension", "Heartburn"],
+    "fakeIndicators": ["Tablet color not standard (should be off-white)", "No Square seal", "Coating dissolves easily in hand", "No batch number"],
+    "safeAlternatives": ["Ibuprofen generic", "Brufen 200mg", "Advil 200mg"]
+  },
+  {
+    "name": "Naprox 500mg",
+    "genericName": "Naproxen Sodium",
+    "manufacturer": "Drug International",
+    "uses": ["Arthritis", "Pain relief", "Gout", "Menstrual cramps"],
+    "sideEffects": ["GI upset", "Hypertension", "Fluid retention", "Kidney damage"],
+    "fakeIndicators": ["Tablet shape wrong (should be oval blue)", "No Drug International logo", "Missing score line", "No expiry embossing"],
+    "safeAlternatives": ["Naproxen generic", "Naprosyn 500mg", "Aleve 220mg"]
+  },
+  {
+    "name": "Ondancil 8mg",
+    "genericName": "Ondansetron HCl",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Chemotherapy-induced nausea", "Post-operative nausea", "Gastroenteritis nausea"],
+    "sideEffects": ["Headache", "Constipation", "QT prolongation (rare)", "Dizziness"],
+    "fakeIndicators": ["Tablet film-coat peeling", "No Incepta branding", "Tongue tablet not dissolving properly", "Missing registered trademark"],
+    "safeAlternatives": ["Ondansetron generic", "Zofran 8mg", "Emeset 8mg"]
+  },
+  {
+    "name": "Amlo 5mg",
+    "genericName": "Amlodipine Besylate",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["High blood pressure", "Stable angina", "Vasospastic angina"],
+    "sideEffects": ["Ankle edema", "Flushing", "Headache", "Fatigue"],
+    "fakeIndicators": ["Tablet color too white (should be white-yellow)", "No Square Pharmaceuticals seal", "Packaging tamper seal absent", "Missing batch code"],
+    "safeAlternatives": ["Amlodipine generic", "Norvasc 5mg", "Dianel 5mg"]
+  },
+  {
+    "name": "Oralin 500mg",
+    "genericName": "Metronidazole",
+    "manufacturer": "Drug International",
+    "uses": ["Anaerobic infections", "Dental infections", "Helicobacter pylori", "Giardiasis"],
+    "sideEffects": ["Metallic taste", "Nausea", "Peripheral neuropathy", "Disulfiram-like reaction with alcohol"],
+    "fakeIndicators": ["Tablet surface rough and pitted", "No Drug International branding", "Missing lot number", "Wrong shade of white"],
+    "safeAlternatives": ["Metronidazole generic", "Flagyl 500mg", "Amodis 400mg"]
+  },
+  {
+    "name": "Clav 625mg",
+    "genericName": "Amoxicillin + Clavulanate",
+    "manufacturer": "Square Pharmaceuticals",
+    "uses": ["Resistant bacterial infections", "Skin infections", "Sinusitis", "Ear infections"],
+    "sideEffects": ["Diarrhea", "Nausea", "Rash", "Cholestatic jaundice (rare)"],
+    "fakeIndicators": ["Tablet color not standard (should be white-yellow)", "No Square Pharmaceuticals logo", "Missing foil seal", "Wrong imprint code"],
+    "safeAlternatives": ["Amoxicillin-Clavulanate generic", "Augmentin 625mg", "Clavamox 625mg"]
+  },
+  {
+    "name": "Sertra 50mg",
+    "genericName": "Sertraline HCl",
+    "manufacturer": "Incepta Pharmaceuticals",
+    "uses": ["Depression", "OCD", "Panic disorder", "PTSD", "Social anxiety"],
+    "sideEffects": ["Nausea", "Insomnia", "Sexual dysfunction", "Diarrhea"],
+    "fakeIndicators": ["Tablet coating inconsistent", "No Incepta branding", "Missing schedule marking", "Wrong tablet shape"],
+    "safeAlternatives": ["Sertraline generic", "Zoloft 50mg", "Serdep 50mg"]
+  },
+  {
+    "name": "Telma 40mg",
+    "genericName": "Telmisartan",
+    "manufacturer": "Beximco Pharmaceuticals",
+    "uses": ["Hypertension", "Cardiovascular risk reduction", "Diabetic nephropathy"],
+    "sideEffects": ["Dizziness", "Hyperkalemia", "Renal impairment", "Upper respiratory infection"],
+    "fakeIndicators": ["Tablet color inconsistent (should be white)", "No Beximco hologram", "Score line absent", "Packaging print quality poor"],
+    "safeAlternatives": ["Telmisartan generic", "Micardis 40mg", "Telsartan 40mg"]
+  },
+  {
+    "name": "Clarith 500mg",
+    "genericName": "Clarithromycin",
+    "manufacturer": "Drug International",
+    "uses": ["Respiratory infections", "H. pylori eradication", "Skin infections", "MAC treatment"],
+    "sideEffects": ["Nausea", "Diarrhea", "Metallic taste", "QT prolongation (rare)"],
+    "fakeIndicators": ["Tablet coating peels off easily", "No Drug International seal", "Yellow film coat faded", "Missing batch number"],
+    "safeAlternatives": ["Clarithromycin generic", "Biaxin 500mg", "Klaricid 500mg"]
+  }
+]

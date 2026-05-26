@@ -6,6 +6,7 @@ import { VerificationModule } from './verification/verification.module';
 import { MedicinesModule } from './medicines/medicines.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { AdminModule } from './admin/admin.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AdminModule } from './admin/admin.module';
     MedicinesModule,
     AlertsModule,
     AdminModule,
+    AiModule,
   ],
 })
 export class AppModule {}
