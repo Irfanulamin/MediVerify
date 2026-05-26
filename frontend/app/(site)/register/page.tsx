@@ -8,12 +8,7 @@ import { ShieldCheck } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "user" as "user" | "pharmacist" | "admin",
-  });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,10 +17,7 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-        form
-      );
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, form);
       router.push("/login");
     } catch (err: any) {
       const msg =
@@ -102,26 +94,6 @@ export default function RegisterPage() {
               placeholder="Min. 6 characters"
               className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--accent)] transition-smooth text-sm"
             />
-          </div>
-
-          <div>
-            <label className="block text-[var(--muted-foreground)] text-xs mb-1.5">
-              Role
-            </label>
-            <select
-              value={form.role}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  role: e.target.value as "user" | "pharmacist" | "admin",
-                })
-              }
-              className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--accent)] transition-smooth text-sm"
-            >
-              <option value="user">Patient / General User</option>
-              <option value="pharmacist">Pharmacist</option>
-              <option value="admin">Admin</option>
-            </select>
           </div>
 
           <button
