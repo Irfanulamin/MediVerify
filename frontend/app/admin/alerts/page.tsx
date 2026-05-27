@@ -14,21 +14,21 @@ interface Alert {
   location: string;
   description: string;
   isVerified: boolean;
+  reportedBy?: string;
   createdAt: string;
 }
+
+type Filter = "all" | "verified" | "unverified";
 
 export default function AdminAlertsPage() {
   const { t } = useLanguage();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const authHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem("mv_token")}` },
-  });
+  const [filter, setFilter] = useState<Filter>("all");
 
   const fetchAlerts = async () => {
     try {
-      const r = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/alerts`);
+      const r = await axios.get("/api/proxy/alerts/all");
       setAlerts(r.data);
     } catch {
       toast.error("Failed to load alerts");
@@ -39,7 +39,7 @@ export default function AdminAlertsPage() {
 
   const approve = async (id: string) => {
     try {
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/alerts/${id}`, {}, authHeader());
+      await axios.patch(`/api/proxy/alerts/${id}`, {});
       setAlerts((prev) => prev.map((a) => (a._id === id ? { ...a, isVerified: true } : a)));
       toast.success("Alert approved");
     } catch {
@@ -49,7 +49,7 @@ export default function AdminAlertsPage() {
 
   const remove = async (id: string) => {
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/alerts/${id}`, authHeader());
+      await axios.delete(`/api/proxy/alerts/${id}`);
       setAlerts((prev) => prev.filter((a) => a._id !== id));
       toast.success("Alert deleted");
     } catch {
@@ -59,13 +59,38 @@ export default function AdminAlertsPage() {
 
   useEffect(() => {
     fetchAlerts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const filtered = alerts.filter((a) => {
+    if (filter === "verified") return a.isVerified;
+    if (filter === "unverified") return !a.isVerified;
+    return true;
+  });
 
   return (
     <div>
-      <h1 className="font-display text-2xl md:text-3xl tracking-tight text-[var(--foreground)] mb-8">
-        {t.admin.alertsMgmt}
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-display text-2xl md:text-3xl tracking-tight text-[var(--foreground)]">
+          {t.admin.alertsMgmt}
+        </h1>
+        {/* Filter tabs */}
+        <div className="flex gap-1 p-1 rounded-xl bg-[var(--card)]">
+          {(["all", "verified", "unverified"] as Filter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-smooth ${
+                filter === f
+                  ? "bg-[var(--background)] text-[var(--foreground)] shadow-soft"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              {f === "all" ? "All" : f === "verified" ? "Verified" : "Unverified"}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {loading ? (
         <div className="space-y-3">
@@ -73,14 +98,14 @@ export default function AdminAlertsPage() {
             <div key={i} className="h-16 rounded-xl bg-[var(--card)] animate-pulse" />
           ))}
         </div>
-      ) : alerts.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <p className="text-[var(--muted-foreground)] text-sm">No alerts found.</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--card)]">
-                {[t.admin.colMedicine, t.admin.colType, t.admin.colLocation, t.admin.colDate, t.admin.colVerified, t.admin.colActions].map((col) => (
+                {[t.admin.colMedicine, t.admin.colType, t.admin.colLocation, "Reported By", t.admin.colDate, t.admin.colVerified, t.admin.colActions].map((col) => (
                   <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
                     {col}
                   </th>
@@ -88,7 +113,7 @@ export default function AdminAlertsPage() {
               </tr>
             </thead>
             <tbody>
-              {alerts.map((alert, i) => (
+              {filtered.map((alert, i) => (
                 <motion.tr
                   key={alert._id}
                   className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--card)] transition-smooth"
@@ -99,6 +124,7 @@ export default function AdminAlertsPage() {
                   <td className="px-4 py-3 font-medium text-[var(--foreground)]">{alert.medicineName}</td>
                   <td className="px-4 py-3 text-[var(--muted-foreground)]">{alert.alertType}</td>
                   <td className="px-4 py-3 text-[var(--muted-foreground)]">{alert.location}</td>
+                  <td className="px-4 py-3 text-[var(--muted-foreground)] text-xs">{alert.reportedBy || "—"}</td>
                   <td className="px-4 py-3 text-[var(--muted-foreground)] whitespace-nowrap">
                     {new Date(alert.createdAt).toLocaleDateString()}
                   </td>

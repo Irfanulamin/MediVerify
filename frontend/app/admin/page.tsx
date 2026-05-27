@@ -19,11 +19,8 @@ export default function AdminOverviewPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("mv_token");
     axios
-      .get(`${process.env.NEXT_PUBLIC_API_URL}/admin/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/api/proxy/admin/stats")
       .then((r) => setStats(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));

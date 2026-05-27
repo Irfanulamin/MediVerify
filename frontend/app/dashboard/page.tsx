@@ -18,6 +18,17 @@ interface VerifyResult {
   fakeIndicators?: string[];
   safeAlternatives?: string[];
   explanation?: string;
+  uses?: string[];
+  sideEffects?: string[];
+  foundInDatabase?: boolean;
+  couldReadImage?: boolean;
+  generalInfo?: string;
+  // image extraction fields
+  extracted_name?: string | null;
+  batch_number?: string | null;
+  expiry_date?: string | null;
+  manufacturer_from_image?: string | null;
+  error?: string;
 }
 
 const RECENT_KEY = "mv_recent_searches";
@@ -64,13 +75,37 @@ export default function DashboardPage() {
     setLoading(true);
     setResult(null);
     try {
-      const token = localStorage.getItem("mv_token");
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/verify`,
-        { query: q, image: img },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { query: q, image: img }
       );
-      setResult(res.data);
+      const raw = res.data;
+
+      if (raw.error) {
+        toast.error(raw.error);
+        return;
+      }
+
+      const med = raw.medicine ?? {};
+      setResult({
+        result: raw.result,
+        medicineName: med.name ?? raw.medicineName ?? raw.medicine_name,
+        genericName: med.genericName ?? raw.genericName ?? raw.generic_name,
+        manufacturer: med.manufacturer ?? raw.manufacturer,
+        trustScore: raw.trustScore ?? raw.trust_score ?? med.trustScore,
+        fakeIndicators: med.fakeIndicators ?? raw.fakeIndicators ?? raw.fake_indicators ?? [],
+        safeAlternatives: med.safeAlternatives ?? raw.safeAlternatives ?? raw.safe_alternatives ?? [],
+        explanation: raw.explanation,
+        uses: med.uses ?? raw.uses ?? [],
+        sideEffects: med.sideEffects ?? raw.sideEffects ?? raw.side_effects ?? [],
+        foundInDatabase: raw.foundInDatabase ?? raw.found_in_database,
+        couldReadImage: raw.couldReadImage ?? raw.could_read_image,
+        generalInfo: raw.generalInfo ?? raw.general_info,
+        extracted_name: raw.extracted_name ?? null,
+        batch_number: raw.batch_number ?? null,
+        expiry_date: raw.expiry_date ?? null,
+        manufacturer_from_image: raw.manufacturer_from_image ?? null,
+      });
       if (q) {
         saveRecent(q);
         setRecent(loadRecent());
@@ -202,6 +237,7 @@ export default function DashboardPage() {
               ref={fileRef}
               type="file"
               accept="image/*"
+              capture="environment"
               onChange={handleImageChange}
               className="hidden"
             />
@@ -210,7 +246,7 @@ export default function DashboardPage() {
               disabled={loading || !imageFile}
               className="w-full px-5 py-3 rounded-xl text-sm font-medium bg-[var(--foreground)] text-[var(--background)] hover:opacity-85 transition-smooth disabled:opacity-40"
             >
-              {loading ? t.dashboard.verifying : t.dashboard.verifyBtn}
+              {loading ? t.dashboard.readingImage : t.dashboard.verifyBtn}
             </button>
           </motion.form>
         )}
@@ -233,6 +269,12 @@ export default function DashboardPage() {
       {/* Result */}
       {result && !loading && (
         <div className="mb-8">
+          {result.extracted_name && (
+            <p className="text-sm text-[var(--muted-foreground)] mb-3">
+              <span className="font-medium text-[var(--foreground)]">{t.dashboard.detectedMedicine}</span>{" "}
+              {result.extracted_name}
+            </p>
+          )}
           <ResultCard
             data={result}
             onAlternativeClick={(name) => {

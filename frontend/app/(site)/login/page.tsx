@@ -21,11 +21,14 @@ export default function LoginPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
         form
       );
-      localStorage.setItem("mv_token", res.data.access_token);
+      await axios.post("/api/auth/session", {
+        access_token: res.data.access_token,
+      });
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string | string[] } } };
       const msg =
-        err?.response?.data?.message ?? "Login failed. Please check your credentials.";
+        axiosErr?.response?.data?.message ?? "Login failed. Please check your credentials.";
       setError(Array.isArray(msg) ? msg.join(", ") : msg);
     } finally {
       setLoading(false);

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, LogOut, Home, Zap, AlertTriangle, Menu, X } from "lucide-react";
+import { ShieldCheck, LogOut, Home, Zap, AlertTriangle, Menu, History, Bookmark, GitCompare, User } from "lucide-react";
+import axios from "axios";
 import { useLanguage } from "@/lib/i18n";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -15,28 +16,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("mv_token");
-    if (!token) {
+    axios.get("/api/auth/me").then((res) => {
+      setUserName(res.data.email?.split("@")[0] ?? "");
+    }).catch(() => {
       router.replace("/login");
-      return;
-    }
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setUserName(payload.email?.split("@")[0] ?? "");
-    } catch {
-      // ignore decode errors
-    }
+    });
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("mv_token");
+  const handleLogout = async () => {
+    await axios.post("/api/auth/logout");
     router.push("/login");
   };
 
   const navItems = [
     { href: "/dashboard", label: lang === "bn" ? "যাচাই" : "Verify", icon: ShieldCheck },
     { href: "/dashboard/interactions", label: lang === "bn" ? "মিথস্ক্রিয়া" : "Interactions", icon: Zap },
-    { href: "/alerts", label: lang === "bn" ? "সতর্কতা" : "Alerts", icon: AlertTriangle },
+    { href: "/dashboard/alerts", label: lang === "bn" ? "সতর্কতা" : "Alerts", icon: AlertTriangle },
+    { href: "/dashboard/history", label: lang === "bn" ? "ইতিহাস" : "History", icon: History },
+    { href: "/dashboard/saved", label: lang === "bn" ? "সংরক্ষিত" : "Saved", icon: Bookmark },
+    { href: "/dashboard/compare", label: lang === "bn" ? "তুলনা" : "Compare", icon: GitCompare },
+    { href: "/dashboard/profile", label: lang === "bn" ? "প্রোফাইল" : "Profile", icon: User },
   ];
 
   const SidebarContent = () => (
@@ -144,7 +143,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
-        <main className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
+        <main className="flex-1 p-6 md:p-8 max-w-5xl mx-auto w-full">
           {children}
         </main>
       </div>

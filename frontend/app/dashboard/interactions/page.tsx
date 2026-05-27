@@ -31,11 +31,9 @@ export default function InteractionsPage() {
     setLoading(true);
     setResult(null);
     try {
-      const token = localStorage.getItem("mv_token");
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/verify/interactions`,
-        { medicine1: med1.trim(), medicine2: med2.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { medicine1: med1.trim(), medicine2: med2.trim() }
       );
       setResult(res.data);
     } catch {

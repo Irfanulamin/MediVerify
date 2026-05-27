@@ -1,10 +1,12 @@
 import base64
+import io
 import json
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
+from PIL import Image
 import google.generativeai as genai
 
 _NULL_RESULT = {
@@ -25,18 +27,32 @@ def extract_medicine_from_image(image_base64: str) -> dict:
 
     try:
         image_data = base64.b64decode(image_base64)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        img = Image.open(io.BytesIO(image_data))
+        img.verify()
+
+        # Re-open after verify (verify() exhausts the file object)
+        img = Image.open(io.BytesIO(image_data))
+        img_bytes_io = io.BytesIO()
+        img.save(img_bytes_io, format=img.format or "JPEG")
+        img_bytes = img_bytes_io.getvalue()
+        mime = f"image/{(img.format or 'jpeg').lower()}"
+
+        model = genai.GenerativeModel("gemini-2.0-flash-lite")
         response = model.generate_content([
             (
-                "Look at this medicine packaging image. "
-                "Extract and return JSON with exactly these fields: "
+                "Extract from this medicine packaging: "
                 '{"medicine_name": <string or null>, "batch_number": <string or null>, '
                 '"expiry_date": <string or null>, "manufacturer": <string or null>}. '
                 "Return ONLY valid JSON."
             ),
-            {"mime_type": "image/jpeg", "data": image_data},
+            {"mime_type": mime, "data": img_bytes},
         ])
-        raw = response.text.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+        raw = response.text.strip()
+        if raw.startswith("```"):
+            raw = raw.split("```", 2)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.rsplit("```", 1)[0].strip()
         parsed = json.loads(raw)
         return {
             "medicine_name": parsed.get("medicine_name"),
@@ -45,4 +61,4 @@ def extract_medicine_from_image(image_base64: str) -> dict:
             "manufacturer": parsed.get("manufacturer"),
         }
     except Exception:
-        return _NULL_RESULT.copy()
+        return {"error": "Cannot read image, please type name instead"}

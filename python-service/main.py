@@ -1,13 +1,16 @@
 import os
-import random
+import json
+import base64
+import io
 from dotenv import load_dotenv
 
 load_dotenv()
 
 import google.generativeai as genai
 import chromadb
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -17,14 +20,27 @@ if not GEMINI_API_KEY:
 
 genai.configure(api_key=GEMINI_API_KEY)
 
+INTERNAL_SECRET = os.environ.get("INTERNAL_SECRET", "")
+BACKEND_ORIGIN = os.environ.get("BACKEND_ORIGIN", "http://localhost:3001")
+
 app = FastAPI(title="MediVerify Python Service")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[BACKEND_ORIGIN],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def require_internal_token(request: Request, call_next):
+    if request.url.path in ("/health", "/test"):
+        return await call_next(request)
+    token = request.headers.get("x-internal-token", "")
+    if not INTERNAL_SECRET or token != INTERNAL_SECRET:
+        return JSONResponse(status_code=403, content={"detail": "Forbidden"})
+    return await call_next(request)
 
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
 collection = chroma_client.get_or_create_collection(name="medicines")
@@ -64,9 +80,13 @@ SEED_MEDICINES = [
 
 
 def seed_collection():
-    if collection.count() >= 30:
+    count = collection.count()
+    print(f"ChromaDB contains {count} medicines")
+    if count > 0:
         return
-    existing_ids = set()
+
+    print("ChromaDB is empty. Seeding now...")
+    existing_ids: set = set()
     try:
         existing = collection.get()
         existing_ids = set(existing.get("ids", []))
@@ -98,15 +118,19 @@ def seed_collection():
 
     if documents:
         collection.add(documents=documents, metadatas=metadatas, ids=ids)
+        for med in SEED_MEDICINES:
+            if med["id"] in ids:
+                print(f"  Stored: {med['name']}")
 
 
 seed_collection()
+print(f"Startup complete. ChromaDB has {collection.count()} medicines.")
 
 
 # ─── Models ──────────────────────────────────────────────────────────────────
 
 class VerifyRequest(BaseModel):
-    query: str
+    query: str = ""
     image: Optional[str] = None
 
 
@@ -119,6 +143,11 @@ class VerifyResponse(BaseModel):
     manufacturer: str
     fakeIndicators: list[str]
     safeAlternatives: list[str]
+    foundInDatabase: bool = False
+    uses: list[str] = []
+    sideEffects: list[str] = []
+    couldReadImage: Optional[bool] = None
+    generalInfo: Optional[str] = None
 
 
 class InteractionsRequest(BaseModel):
@@ -135,16 +164,16 @@ class InteractionsResponse(BaseModel):
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
-def _trust_score(result: str) -> int:
-    if result == "VERIFIED":
-        return random.randint(85, 95)
-    if result == "SUSPICIOUS":
-        return random.randint(20, 45)
-    return random.randint(50, 65)
+def _strip_fences(text: str) -> str:
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[-1] if "\n" in text else text[3:]
+    if text.endswith("```"):
+        text = text.rsplit("```", 1)[0]
+    return text.strip()
 
 
 def _parse_list(text: str, marker: str) -> list[str]:
-    """Extract a bullet list section from structured Gemini output."""
     lines = text.split("\n")
     collecting = False
     items = []
@@ -168,96 +197,235 @@ def _extract_field(text: str, label: str) -> str:
     return ""
 
 
-# ─── Endpoints ───────────────────────────────────────────────────────────────
+def _not_found_response(query: str, could_read_image: Optional[bool] = None) -> VerifyResponse:
+    return VerifyResponse(
+        result="UNKNOWN",
+        trustScore=0,
+        explanation="Medicine not found in our database.",
+        medicineName=query,
+        genericName="",
+        manufacturer="",
+        fakeIndicators=[],
+        safeAlternatives=[],
+        foundInDatabase=False,
+        uses=[],
+        sideEffects=[],
+        couldReadImage=could_read_image,
+    )
 
-@app.post("/verify", response_model=VerifyResponse)
-async def verify_medicine(body: VerifyRequest):
-    query = body.query
 
-    # Image branch: use Gemini Vision to extract medicine name
-    if body.image:
-        try:
-            vision_model = genai.GenerativeModel("gemini-1.5-flash")
-            import base64
-            image_data = base64.b64decode(body.image)
-            vision_response = vision_model.generate_content([
-                "Look at this medicine packaging image. Extract ONLY the medicine brand name and strength (e.g. 'Napa Extra' or 'Ciprofloxacin 500mg'). Reply with just the name, nothing else.",
-                {"mime_type": "image/jpeg", "data": image_data},
-            ])
-            extracted = vision_response.text.strip()
-            if extracted:
-                query = extracted
-        except Exception:
-            pass  # Fall through to text query if vision fails
+def _unreadable_image_response() -> VerifyResponse:
+    return VerifyResponse(
+        result="UNKNOWN",
+        trustScore=0,
+        explanation="Could not read image clearly. Please try better lighting or type the name.",
+        medicineName="",
+        genericName="",
+        manufacturer="",
+        fakeIndicators=[],
+        safeAlternatives=[],
+        foundInDatabase=False,
+        uses=[],
+        sideEffects=[],
+        couldReadImage=False,
+    )
 
-    if not query:
-        raise HTTPException(status_code=400, detail="query or image required")
 
-    # RAG retrieval
+def _general_knowledge_verify(query: str, could_read_image: Optional[bool] = None) -> VerifyResponse:
+    """Call Gemini without RAG context when ChromaDB has no good match."""
+    print(f"Using general knowledge fallback for: {query}")
+    prompt = f"""You are a medicine expert for Bangladesh's pharmaceutical market.
+The user is asking about: "{query}"
+This medicine is NOT in our verified database.
+
+Using your general pharmaceutical knowledge, provide information about this medicine.
+Return ONLY valid JSON (no markdown, no backticks):
+{{
+  "trust_score": <integer 40-60, since this is unverified general knowledge>,
+  "is_verified": false,
+  "found_in_database": false,
+  "medicine_name": "<corrected spelling of the medicine name if there is a typo, otherwise as given>",
+  "general_info": "<1-2 sentence plain-language description of what this medicine is used for>",
+  "explanation": "Not in our verified database. General information only — accuracy not guaranteed.",
+  "recommendation": "Please verify with a licensed pharmacist before use.",
+  "safe_alternatives": []
+}}
+
+Return ONLY valid JSON."""
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        print("Gemini general-knowledge response received")
+        data = json.loads(_strip_fences(response.text.strip()))
+        trust_score = max(0, min(100, int(data.get("trust_score", 50))))
+        return VerifyResponse(
+            result="UNKNOWN",
+            trustScore=trust_score,
+            explanation=data.get("explanation", "Not in our verified database. General information only."),
+            medicineName=data.get("medicine_name", query),
+            genericName="",
+            manufacturer="",
+            fakeIndicators=[],
+            safeAlternatives=data.get("safe_alternatives", []),
+            foundInDatabase=False,
+            uses=[],
+            sideEffects=[],
+            couldReadImage=could_read_image,
+            generalInfo=data.get("general_info", ""),
+        )
+    except Exception as e:
+        print(f"General knowledge fallback failed: {e}")
+        return _not_found_response(query, could_read_image)
+
+
+def _rag_verify(query: str, could_read_image: Optional[bool] = None) -> VerifyResponse:
+    """Core RAG verification: ChromaDB query → Gemini JSON → VerifyResponse."""
+    print(f"Querying ChromaDB for: {query}")
     results = collection.query(query_texts=[query], n_results=3)
-    context_parts = []
-    if results and results.get("documents"):
-        for doc in results["documents"][0]:
-            context_parts.append(doc)
-    context = "\n\n".join(context_parts)
 
-    prompt = f"""You are a medicine verification assistant for Bangladesh's pharmaceutical market.
+    docs = results.get("documents", [[]])[0] if results else []
+    distances = results.get("distances", [[]])[0] if results else []
+    top_distance = distances[0] if distances else None
+    print(f"ChromaDB returned {len(docs)} results" + (f" (top distance: {top_distance:.3f})" if top_distance is not None else ""))
 
-Based on the following verified medicine database entries:
+    if not docs or (top_distance is not None and top_distance > 1.5):
+        if not docs:
+            print("No ChromaDB results. Using general knowledge fallback.")
+        else:
+            print(f"No RAG match (distance={top_distance:.2f}). Using general knowledge fallback.")
+        return _general_knowledge_verify(query, could_read_image)
+
+    context = "\n\n".join(docs)
+    print(f"Calling Gemini with context length: {len(context)}")
+
+    prompt = f"""You are MediVerify AI for Bangladesh's pharmaceutical market.
+
+Here is verified medicine data from our database:
 {context}
 
 A user is asking about: "{query}"
 
-Respond in EXACTLY this format (do not deviate):
-VERDICT: VERIFIED | SUSPICIOUS | UNKNOWN
-MEDICINE NAME: <brand name>
-GENERIC NAME: <generic/INN name>
-MANUFACTURER: <manufacturer name>
-EXPLANATION: <2-3 sentence explanation of why this verdict was given>
-FAKE INDICATORS:
-- <indicator 1>
-- <indicator 2>
-- <indicator 3>
-SAFE ALTERNATIVES:
-- <alternative 1>
-- <alternative 2>
-- <alternative 3>
+Return ONLY valid JSON with no markdown, no backticks, no explanation:
+{{
+  "trust_score": <integer 0-100, how well this medicine matches the database>,
+  "is_verified": <boolean, true if this appears to be a legitimate medicine>,
+  "medicine_name": "<correct brand name from database>",
+  "generic_name": "<generic/INN name>",
+  "manufacturer": "<manufacturer name>",
+  "uses": ["<use 1>", "<use 2>", "<use 3>"],
+  "side_effects": ["<side effect 1>", "<side effect 2>", "<side effect 3>"],
+  "explanation": "<2-3 sentences explaining the trust score and verification status>",
+  "fake_indicators": ["<indicator 1>", "<indicator 2>", "<indicator 3>"],
+  "safe_alternatives": ["<alternative 1>", "<alternative 2>"],
+  "found_in_database": true
+}}
 
-Be accurate and concise."""
+Scoring guide:
+- 80-100: Medicine name closely matches database entry
+- 40-79: Partial match or generic name match
+- 0-39: Unknown or suspicious
+
+Return ONLY valid JSON."""
 
     model = genai.GenerativeModel("gemini-1.5-flash")
     response = model.generate_content(prompt)
+    print("Gemini response received")
     text = response.text.strip()
 
-    result = "UNKNOWN"
-    if "VERDICT: VERIFIED" in text.upper():
-        result = "VERIFIED"
-    elif "VERDICT: SUSPICIOUS" in text.upper():
-        result = "SUSPICIOUS"
+    try:
+        data = json.loads(_strip_fences(text))
+        raw_score = data.get("trust_score", 0)
+        trust_score = max(0, min(100, int(raw_score)))
+        is_verified = bool(data.get("is_verified", False))
 
-    medicine_name = _extract_field(text, "MEDICINE NAME") or query
-    generic_name = _extract_field(text, "GENERIC NAME")
-    manufacturer = _extract_field(text, "MANUFACTURER")
-    explanation = _extract_field(text, "EXPLANATION")
-    fake_indicators = _parse_list(text, "FAKE INDICATORS")
-    safe_alternatives = _parse_list(text, "SAFE ALTERNATIVES")
+        if is_verified:
+            result = "VERIFIED"
+        elif trust_score >= 40:
+            result = "SUSPICIOUS"
+        else:
+            result = "UNKNOWN"
 
-    if not explanation:
-        clean = text
-        for marker in ["VERDICT:", "MEDICINE NAME:", "GENERIC NAME:", "MANUFACTURER:", "FAKE INDICATORS:", "SAFE ALTERNATIVES:"]:
-            clean = clean.replace(marker, "")
-        explanation = " ".join(clean.split()).strip()[:400]
+        return VerifyResponse(
+            result=result,
+            trustScore=trust_score,
+            explanation=data.get("explanation", ""),
+            medicineName=data.get("medicine_name", query),
+            genericName=data.get("generic_name", ""),
+            manufacturer=data.get("manufacturer", ""),
+            fakeIndicators=data.get("fake_indicators", []),
+            safeAlternatives=data.get("safe_alternatives", []),
+            foundInDatabase=bool(data.get("found_in_database", True)),
+            uses=data.get("uses", []),
+            sideEffects=data.get("side_effects", []),
+            couldReadImage=could_read_image,
+        )
+    except (json.JSONDecodeError, ValueError, TypeError):
+        # Fallback: structured-text extraction
+        print("Gemini JSON parse failed, falling back to text extraction")
+        result = "UNKNOWN"
+        if "VERIFIED" in text.upper():
+            result = "VERIFIED"
+        elif "SUSPICIOUS" in text.upper():
+            result = "SUSPICIOUS"
 
-    return VerifyResponse(
-        result=result,
-        trustScore=_trust_score(result),
-        explanation=explanation,
-        medicineName=medicine_name,
-        genericName=generic_name,
-        manufacturer=manufacturer,
-        fakeIndicators=fake_indicators,
-        safeAlternatives=safe_alternatives,
-    )
+        return VerifyResponse(
+            result=result,
+            trustScore=0,
+            explanation=_extract_field(text, "EXPLANATION") or text[:300],
+            medicineName=_extract_field(text, "MEDICINE NAME") or query,
+            genericName=_extract_field(text, "GENERIC NAME"),
+            manufacturer=_extract_field(text, "MANUFACTURER"),
+            fakeIndicators=_parse_list(text, "FAKE INDICATORS"),
+            safeAlternatives=_parse_list(text, "SAFE ALTERNATIVES"),
+            foundInDatabase=False,
+            uses=[],
+            sideEffects=[],
+            couldReadImage=could_read_image,
+        )
+
+
+# ─── Endpoints ───────────────────────────────────────────────────────────────
+
+@app.post("/verify", response_model=VerifyResponse)
+async def verify_medicine(body: VerifyRequest):
+    # ── Image path ──────────────────────────────────────────────────────────
+    if body.image:
+        try:
+            import PIL.Image
+            image_bytes = base64.b64decode(body.image)
+            pil_image = PIL.Image.open(io.BytesIO(image_bytes))
+
+            vision_prompt = """Look at this medicine packaging image carefully.
+Extract what you can read and return ONLY valid JSON (no markdown, no backticks):
+{
+  "medicine_name": "<brand name or null if unreadable>",
+  "batch_number": "<batch number or null>",
+  "expiry_date": "<expiry date or null>",
+  "manufacturer": "<manufacturer or null>",
+  "could_read_image": <true if you could read the medicine name, false if image is too blurry/unclear>
+}
+If you cannot read anything clearly, set could_read_image to false and all other fields to null."""
+
+            vision_model = genai.GenerativeModel("gemini-1.5-flash")
+            vision_response = vision_model.generate_content([vision_prompt, pil_image])
+            extracted = json.loads(_strip_fences(vision_response.text))
+
+            if extracted.get("could_read_image") and extracted.get("medicine_name"):
+                return _rag_verify(extracted["medicine_name"], could_read_image=True)
+            else:
+                return _unreadable_image_response()
+
+        except Exception as e:
+            print(f"Image processing error: {e}")
+            return _unreadable_image_response()
+
+    # ── Text path ────────────────────────────────────────────────────────────
+    query = body.query.strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query or image required")
+
+    return _rag_verify(query)
 
 
 @app.post("/interactions", response_model=InteractionsResponse)
@@ -340,4 +508,93 @@ async def search_medicines(q: str = ""):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "medicines": collection.count()}
+    return {"status": "ok", "medicines_in_chromadb": collection.count()}
+
+
+@app.get("/test")
+async def test_chromadb():
+    """Debug endpoint — query ChromaDB for Napa Extra and return raw result. Delete after confirming real data."""
+    result = collection.query(query_texts=["Napa Extra"], n_results=3)
+    return result
+
+
+# ─── AI Explain & Symptoms ───────────────────────────────────────────────────
+
+class MedicineExplainRequest(BaseModel):
+    medicine_name: str
+
+
+class SymptomsRequest(BaseModel):
+    symptoms: str
+
+
+@app.post("/explain")
+async def explain_medicine(body: MedicineExplainRequest):
+    prompt = f"""You are a pharmacist assistant. Explain the medicine "{body.medicine_name}" in simple, plain language for a patient in Bangladesh.
+
+Respond in EXACTLY this format:
+SUMMARY: <1-2 sentences on what it treats>
+SIDE_EFFECTS: <2-3 most common side effects in plain language, no jargon>
+DOSAGE: <standard dosage range — e.g. 1 tablet (500mg) every 4-6 hours, max 4g/day>
+
+Keep each section to 1-2 sentences. Be clear and direct."""
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+
+        summary = _extract_field(text, "SUMMARY")
+        side_effects = _extract_field(text, "SIDE_EFFECTS")
+        dosage = _extract_field(text, "DOSAGE")
+
+        return {
+            "summary": summary or "Information not available.",
+            "sideEffects": side_effects or "Consult your doctor.",
+            "dosage": dosage or "Follow your doctor's instructions.",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/symptoms")
+async def check_symptoms(body: SymptomsRequest):
+    prompt = f"""A patient in Bangladesh describes the following symptoms: "{body.symptoms}"
+
+List 3-5 common medicines a doctor might consider for these symptoms. For each, give the generic name and one short reason why a doctor might prescribe it.
+
+Respond in EXACTLY this format (one medicine per line after MEDICINES:):
+MEDICINES:
+- <Generic Name>: <one sentence reason>
+- <Generic Name>: <one sentence reason>
+- <Generic Name>: <one sentence reason>
+DISCLAIMER: This is not medical advice. Please consult a qualified doctor or pharmacist before taking any medication."""
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+
+        medicines = []
+        disclaimer = ""
+        collecting = False
+        for line in text.split("\n"):
+            stripped = line.strip()
+            if stripped.upper().startswith("MEDICINES:"):
+                collecting = True
+                continue
+            if stripped.upper().startswith("DISCLAIMER:"):
+                disclaimer = stripped.split(":", 1)[-1].strip()
+                collecting = False
+                continue
+            if collecting and stripped.startswith("-"):
+                parts = stripped.lstrip("-").strip().split(":", 1)
+                if len(parts) == 2:
+                    medicines.append({"name": parts[0].strip(), "reason": parts[1].strip()})
+
+        if not disclaimer:
+            disclaimer = "This is not medical advice. Please consult a qualified doctor or pharmacist before taking any medication."
+
+        return {"medicines": medicines, "disclaimer": disclaimer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -37,6 +37,11 @@ export default function Nav() {
               </a>
             </li>
           ))}
+          <li>
+            <Link href="/dashboard/alerts" className="hover:text-[var(--foreground)] transition-smooth">
+              {lang === "bn" ? "সতর্কতা" : "Alerts"}
+            </Link>
+          </li>
         </ul>
 
         <div className="flex items-center gap-2.5 flex-shrink-0">

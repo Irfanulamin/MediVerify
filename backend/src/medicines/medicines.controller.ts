@@ -3,6 +3,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { MedicinesService } from './medicines.service';
 import { RolesGuard } from '../common/roles.guard';
 import { Roles } from '../common/roles.decorator';
+import { CreateMedicineDto } from './dto/create-medicine.dto';
+import { UpdateMedicineDto } from './dto/update-medicine.dto';
+import { ParseObjectIdPipe } from '../common/parse-object-id.pipe';
 
 @Controller('medicines')
 export class MedicinesController {
@@ -19,28 +22,28 @@ export class MedicinesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.medicinesService.findById(id);
   }
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
-  create(@Body() body: any) {
+  create(@Body() body: CreateMedicineDto) {
     return this.medicinesService.create(body);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
-  update(@Param('id') id: string, @Body() body: any) {
+  update(@Param('id', ParseObjectIdPipe) id: string, @Body() body: UpdateMedicineDto) {
     return this.medicinesService.update(id, body);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseObjectIdPipe) id: string) {
     return this.medicinesService.remove(id);
   }
 }

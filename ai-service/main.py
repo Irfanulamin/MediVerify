@@ -1,20 +1,40 @@
+import os
 from contextlib import asynccontextmanager
 from typing import Any, Optional
 
-from fastapi import FastAPI, Query
+from dotenv import load_dotenv
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from seed import seed_medicines
-from rag import collection, verify_medicine, check_interactions, chat
+load_dotenv()
+
+from seed import seed_medicines, seed_monographs, seed_fake_alerts
+from rag import (
+    medicines_collection,
+    monographs_collection,
+    alerts_collection,
+    verify_medicine,
+    check_interactions,
+    chat,
+    _query_collection,
+)
 from vision import extract_medicine_from_image
+
+INTERNAL_SECRET = os.environ.get("INTERNAL_SECRET", "")
+BACKEND_ORIGIN = os.environ.get("BACKEND_ORIGIN", "http://localhost:3001")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    count = seed_medicines()
+    med_count = seed_medicines()
+    mono_count = seed_monographs()
+    alert_count = seed_fake_alerts()
     print("MediVerify AI Service Ready")
-    print(f"Medicines in ChromaDB: {count}")
+    print(f"  Medicines:       {med_count}")
+    print(f"  Drug monographs: {mono_count}")
+    print(f"  Fake alerts:     {alert_count}")
     yield
 
 
@@ -22,10 +42,20 @@ app = FastAPI(title="MediVerify AI Service", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[BACKEND_ORIGIN],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def require_internal_token(request: Request, call_next):
+    if request.url.path == "/health":
+        return await call_next(request)
+    token = request.headers.get("x-internal-token", "")
+    if not INTERNAL_SECRET or token != INTERNAL_SECRET:
+        return JSONResponse(status_code=403, content={"detail": "Forbidden"})
+    return await call_next(request)
 
 
 # ── Request models ────────────────────────────────────────────────────────────
@@ -50,11 +80,14 @@ class ChatRequest(BaseModel):
 @app.post("/verify")
 async def verify(body: VerifyRequest):
     name = body.medicine_name
+    extraction: dict | None = None
 
     if body.image_base64:
-        extracted = extract_medicine_from_image(body.image_base64)
-        if extracted.get("medicine_name"):
-            name = extracted["medicine_name"]
+        extraction = extract_medicine_from_image(body.image_base64)
+        if extraction.get("error"):
+            return extraction
+        if extraction.get("medicine_name"):
+            name = extraction["medicine_name"]
 
     if not name:
         return {
@@ -71,7 +104,15 @@ async def verify(body: VerifyRequest):
             },
         }
 
-    return verify_medicine(name)
+    result = verify_medicine(name)
+
+    if extraction:
+        result["extracted_name"] = extraction.get("medicine_name")
+        result["batch_number"] = extraction.get("batch_number")
+        result["expiry_date"] = extraction.get("expiry_date")
+        result["manufacturer_from_image"] = extraction.get("manufacturer")
+
+    return result
 
 
 @app.post("/interactions")
@@ -89,8 +130,7 @@ async def search(q: str = Query(default="")):
     if not q.strip():
         return []
     try:
-        results = collection.query(query_texts=[q], n_results=5)
-        metas = results.get("metadatas", [[]])[0]
+        docs, metas, _ = _query_collection(medicines_collection, q, n_results=5)
         return [m.get("name", "") for m in metas if m.get("name")]
     except Exception:
         return []
@@ -98,4 +138,9 @@ async def search(q: str = Query(default="")):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "medicines_count": collection.count()}
+    return {
+        "status": "ok",
+        "medicines_count": medicines_collection.count(),
+        "monographs_count": monographs_collection.count(),
+        "alerts_count": alerts_collection.count(),
+    }

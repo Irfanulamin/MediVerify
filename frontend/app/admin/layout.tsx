@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, LayoutDashboard, AlertTriangle, Users, Database, LogOut, Menu } from "lucide-react";
+import axios from "axios";
 import { useLanguage } from "@/lib/i18n";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -15,25 +16,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("mv_token");
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      if (payload.role !== "admin") {
+    axios.get("/api/auth/me").then((res) => {
+      if (res.data.role !== "admin") {
         router.replace("/dashboard");
         return;
       }
       setChecked(true);
-    } catch {
+    }).catch(() => {
       router.replace("/login");
-    }
+    });
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("mv_token");
+  const handleLogout = async () => {
+    await axios.post("/api/auth/logout");
     router.push("/login");
   };
 
@@ -44,7 +39,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/medicines", label: t.admin.medicineDb, icon: Database },
   ];
 
-  if (!checked) return null;
+  if (!checked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <div className="size-8 rounded-full border-2 border-[var(--border)] border-t-[var(--foreground)] animate-spin" />
+      </div>
+    );
+  }
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">

@@ -19,11 +19,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("mv_token");
     axios
-      .get(`${process.env.NEXT_PUBLIC_API_URL}/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/api/proxy/admin/users")
       .then((r) => setUsers(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));

@@ -10,6 +10,7 @@ export class Alert {
   @Prop({ required: true }) location: string;
   @Prop({ required: true }) description: string;
   @Prop({ default: false }) isVerified: boolean;
+  @Prop({ default: '' }) reportedBy: string;
 }
 
 export const AlertSchema = SchemaFactory.createForClass(Alert);

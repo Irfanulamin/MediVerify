@@ -23,4 +23,18 @@ export class UsersService {
     });
     return user.save();
   }
+
+  async updateProfile(
+    userId: string,
+    profile: { displayName?: string; medications?: string[]; allergies?: string[] },
+  ) {
+    const update: Record<string, any> = {};
+    if (profile.displayName !== undefined) update['profile.displayName'] = profile.displayName;
+    if (profile.medications !== undefined) update['profile.medications'] = profile.medications;
+    if (profile.allergies !== undefined) update['profile.allergies'] = profile.allergies;
+    return this.userModel
+      .findByIdAndUpdate(userId, { $set: update }, { new: true })
+      .select('-password')
+      .lean();
+  }
 }
