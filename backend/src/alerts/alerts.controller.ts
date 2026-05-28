@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -20,10 +21,20 @@ import { CreateAlertDto } from './dto/create-alert.dto';
 export class AlertsController {
   constructor(private alertsService: AlertsService) {}
 
-  /** Public — verified alerts only */
+  /** Public — verified alerts, paginated with filter/sort */
   @Get()
-  findAll() {
-    return this.alertsService.findAll();
+  findAll(
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+    @Query('alertType') alertType?: string,
+    @Query('sort') sort?: 'latest' | 'upvotes',
+  ) {
+    return this.alertsService.findAll({
+      page: Number(page),
+      limit: Number(limit),
+      alertType: alertType || undefined,
+      sort: sort === 'upvotes' ? 'upvotes' : 'latest',
+    });
   }
 
   /** Admin — all alerts including unverified */
@@ -55,6 +66,13 @@ export class AlertsController {
   @UseGuards(AuthGuard('jwt'))
   create(@Body() dto: CreateAlertDto, @Request() req: any) {
     return this.alertsService.create(dto, req.user.email);
+  }
+
+  /** Authenticated users — toggle upvote on an alert */
+  @Patch(':id/upvote')
+  @UseGuards(AuthGuard('jwt'))
+  upvote(@Param('id', ParseObjectIdPipe) id: string, @Request() req: any) {
+    return this.alertsService.upvote(id, req.user.userId);
   }
 
   /** Admin — verify/approve an alert */

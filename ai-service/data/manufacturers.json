@@ -1,0 +1,171 @@
+[
+  {
+    "name": "Beximco Pharmaceuticals",
+    "aliases": ["beximco"],
+    "brands": [
+      "Napa",
+      "Napa Extra",
+      "Napa Extend",
+      "Amodis",
+      "Zimax",
+      "Tyclav",
+      "Azithro",
+      "Atorva",
+      "Renin",
+      "Flucanix",
+      "Clopid",
+      "Cetrizin",
+      "Rosavin",
+      "Esomep",
+      "Telma"
+    ],
+    "batch_format": "Letter prefix (often BX) followed by year and serial digits, e.g. BX2024001",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "One of the largest publicly listed Bangladeshi pharmaceutical companies."
+  },
+  {
+    "name": "Square Pharmaceuticals",
+    "aliases": ["square"],
+    "brands": [
+      "Seclo",
+      "Ciprocin",
+      "Moxacil",
+      "Glucomin",
+      "Predni",
+      "Amodis 400mg",
+      "Ceevit",
+      "ipill",
+      "Sergel"
+    ],
+    "batch_format": "Letter prefix followed by year and 3-digit serial, e.g. SQ24015",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Bangladesh's largest pharmaceutical company by revenue."
+  },
+  {
+    "name": "ACI Limited",
+    "aliases": ["aci"],
+    "brands": [],
+    "batch_format": "Alphanumeric batch code printed on outer carton and blister foil",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Diversified Bangladeshi conglomerate with a major pharmaceuticals division."
+  },
+  {
+    "name": "Incepta Pharmaceuticals",
+    "aliases": ["incepta"],
+    "brands": [
+      "Losectil",
+      "Tycil",
+      "Diaformin",
+      "Diazem",
+      "Glimep",
+      "Atenol",
+      "Tycil 500mg",
+      "Sergel"
+    ],
+    "batch_format": "Letter prefix followed by 6 digits, e.g. IP240015",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Second-largest BD pharma manufacturer; exports to 60+ countries."
+  },
+  {
+    "name": "Opsonin Pharma",
+    "aliases": ["opsonin"],
+    "brands": [],
+    "batch_format": "Alphanumeric code printed on outer pack",
+    "dgda_license": "valid",
+    "headquarters": "Barishal, Bangladesh",
+    "notes": "Established 1956; one of the oldest pharma manufacturers in Bangladesh."
+  },
+  {
+    "name": "Renata Limited",
+    "aliases": ["renata"],
+    "brands": [],
+    "batch_format": "Alphanumeric batch code on outer carton",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Publicly listed; significant presence in pharma and animal health."
+  },
+  {
+    "name": "Eskayef Bangladesh",
+    "aliases": ["eskayef", "skf"],
+    "brands": [],
+    "batch_format": "Alphanumeric batch code; outer carton carries DGDA registration number",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Formerly known as SmithKline & French (SKF) Bangladesh."
+  },
+  {
+    "name": "Aristopharma Ltd",
+    "aliases": ["aristopharma"],
+    "brands": [],
+    "batch_format": "Alphanumeric code printed on blister foil and outer pack",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Manufactures wide range of generics and specialty drugs."
+  },
+  {
+    "name": "Drug International Ltd",
+    "aliases": ["drug international"],
+    "brands": [
+      "Ace",
+      "Ace Plus",
+      "Dianel",
+      "Amitril",
+      "Panto",
+      "Folic",
+      "Naprox 500mg"
+    ],
+    "batch_format": "Alphanumeric batch code on outer carton",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Known for the Ace paracetamol line."
+  },
+  {
+    "name": "General Pharmaceuticals Ltd",
+    "aliases": ["general pharma"],
+    "brands": [],
+    "batch_format": "Alphanumeric batch code on outer pack",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Bangladeshi pharma manufacturer."
+  },
+  {
+    "name": "Acme Laboratories",
+    "aliases": ["acme"],
+    "brands": [],
+    "batch_format": "Alphanumeric batch code on outer pack",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Established 1954; ISO certified manufacturer."
+  },
+  {
+    "name": "Healthcare Pharmaceuticals",
+    "aliases": ["healthcare pharma"],
+    "brands": [],
+    "batch_format": "Alphanumeric batch code on outer pack",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Bangladeshi pharma manufacturer."
+  },
+  {
+    "name": "Popular Pharmaceuticals",
+    "aliases": ["popular"],
+    "brands": [],
+    "batch_format": "Alphanumeric batch code on outer pack",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Bangladeshi pharma manufacturer."
+  },
+  {
+    "name": "Sanofi Bangladesh",
+    "aliases": ["sanofi"],
+    "brands": [],
+    "batch_format": "Global Sanofi batch coding; alphanumeric on outer pack",
+    "dgda_license": "valid",
+    "headquarters": "Dhaka, Bangladesh",
+    "notes": "Bangladesh subsidiary of the multinational Sanofi group."
+  }
+]

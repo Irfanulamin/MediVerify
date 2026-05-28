@@ -60,6 +60,7 @@ def call_gemini(prompt: str, retries: int = 3) -> str:
     for attempt in range(retries):
         try:
             response = model.generate_content(prompt)
+            time.sleep(2)
             return response.text.strip()
         except Exception as e:
             if attempt < retries - 1:

@@ -32,13 +32,22 @@ declare global {
   }
 }
 
+const LANG_KEY = "mv_voice_lang";
+type Lang = "en-US" | "bn-BD";
+
 export function VoiceInput({ onTranscript, onSubmit }: Props) {
   const { t } = useLanguage();
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(true);
   const [interim, setInterim] = useState("");
+  const [lang, setLang] = useState<Lang>("en-US");
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(LANG_KEY);
+    if (stored === "bn-BD" || stored === "en-US") setLang(stored);
+  }, []);
 
   useEffect(() => {
     const SR = window.SpeechRecognition ?? window.webkitSpeechRecognition;
@@ -47,7 +56,7 @@ export function VoiceInput({ onTranscript, onSubmit }: Props) {
       return;
     }
     const rec: SpeechRecognitionInstance = new SR();
-    rec.lang = "bn-BD";
+    rec.lang = lang;
     rec.continuous = true;
     rec.interimResults = true;
 
@@ -55,9 +64,9 @@ export function VoiceInput({ onTranscript, onSubmit }: Props) {
       let final = "";
       let interimText = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) final += t;
-        else interimText += t;
+        const txt = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += txt;
+        else interimText += txt;
       }
       if (interimText) setInterim(interimText);
       if (final) {
@@ -74,7 +83,7 @@ export function VoiceInput({ onTranscript, onSubmit }: Props) {
 
     rec.onend = () => setListening(false);
     recognitionRef.current = rec;
-  }, [onTranscript, onSubmit]);
+  }, [onTranscript, onSubmit, lang]);
 
   const toggle = () => {
     if (!supported) return;
@@ -87,6 +96,13 @@ export function VoiceInput({ onTranscript, onSubmit }: Props) {
       recognitionRef.current?.start();
       setListening(true);
     }
+  };
+
+  const swapLang = () => {
+    if (listening) return;
+    const next: Lang = lang === "en-US" ? "bn-BD" : "en-US";
+    setLang(next);
+    localStorage.setItem(LANG_KEY, next);
   };
 
   if (!supported) {
@@ -102,11 +118,28 @@ export function VoiceInput({ onTranscript, onSubmit }: Props) {
     );
   }
 
+  const isEn = lang === "en-US";
+  const langLabel = isEn ? "EN" : "BN";
+
   return (
-    <div className="relative">
+    <div className="relative flex items-stretch gap-1">
+      <button
+        type="button"
+        onClick={swapLang}
+        disabled={listening}
+        title={isEn ? "Voice language: English (click to switch to Bangla)" : "Voice language: Bangla (click to switch to English)"}
+        className={`px-2 rounded-xl border text-[11px] font-semibold tracking-wide transition-smooth ${
+          isEn
+            ? "border-blue-300 bg-blue-50 text-blue-700"
+            : "border-emerald-300 bg-emerald-50 text-emerald-700"
+        } ${listening ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        {langLabel}
+      </button>
       <button
         type="button"
         onClick={toggle}
+        title={`Voice search (${langLabel})`}
         className={`p-3 rounded-xl border transition-smooth ${
           listening
             ? "border-red-300 bg-red-50 text-red-600"

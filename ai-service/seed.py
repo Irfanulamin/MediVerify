@@ -6,24 +6,31 @@ from rag import (
     monographs_collection,
     alerts_collection,
 )
+from manufacturers import seed_manufacturers  # re-export so main.py can import from seed
 
 DATA_DIR = Path(__file__).parent / "data"
 
 
 def seed_medicines() -> int:
-    if medicines_collection.count() > 0:
-        count = medicines_collection.count()
-        print(f"ChromaDB medicines already seeded ({count}). Skipping.")
-        return count
-
     data_path = DATA_DIR / "medicines.json"
     with open(data_path, encoding="utf-8") as f:
         medicines = json.load(f)
+
+    # Get existing IDs to skip already-seeded entries (idempotent re-seed)
+    try:
+        existing = medicines_collection.get(include=[])
+        existing_ids = set(existing.get("ids", []))
+    except Exception:
+        existing_ids = set()
 
     ids, documents, metadatas = [], [], []
 
     for med in medicines:
         name = med["name"]
+        med_id = name.lower().replace(" ", "-").replace("/", "-")
+        if med_id in existing_ids:
+            continue
+
         uses = med.get("uses", [])
         side_effects = med.get("sideEffects", [])
         fake_indicators = med.get("fakeIndicators", [])
@@ -42,7 +49,6 @@ def seed_medicines() -> int:
             f"Fake indicators: {', '.join(fake_indicators)}. "
             f"Safe alternatives: {', '.join(safe_alternatives)}."
         )
-        med_id = name.lower().replace(" ", "-").replace("/", "-")
 
         ids.append(med_id)
         documents.append(doc)
@@ -56,9 +62,14 @@ def seed_medicines() -> int:
             "safeAlternatives": ", ".join(safe_alternatives),
         })
 
-    medicines_collection.add(ids=ids, documents=documents, metadatas=metadatas)
+    if ids:
+        medicines_collection.add(ids=ids, documents=documents, metadatas=metadatas)
+        print(f"Seeded {len(ids)} new medicines into ChromaDB")
+    else:
+        print("No new medicines to seed (all already in ChromaDB)")
+
     count = medicines_collection.count()
-    print(f"Seeded {count} medicines into ChromaDB")
+    print(f"Total medicines in ChromaDB: {count}")
     return count
 
 

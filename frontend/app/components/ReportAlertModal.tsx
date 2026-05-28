@@ -18,8 +18,10 @@ export function ReportAlertModal({ open, onClose }: Props) {
   const [form, setForm] = useState({
     medicineName: "",
     alertType: "Fake",
+    pharmacyName: "",
     location: "",
     description: "",
+    batchNumber: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -37,7 +39,7 @@ export function ReportAlertModal({ open, onClose }: Props) {
     try {
       await axios.post("/api/proxy/alerts", form);
       toast.success(t.alerts.reportModalSuccess);
-      setForm({ medicineName: "", alertType: "Fake", location: "", description: "" });
+      setForm({ medicineName: "", alertType: "Fake", pharmacyName: "", location: "", description: "", batchNumber: "" });
       onClose();
     } catch {
       toast.error("Submission failed. Please try again.");
@@ -118,7 +120,21 @@ export function ReportAlertModal({ open, onClose }: Props) {
                       <option value="Fake">{t.alerts.typeFake}</option>
                       <option value="Expired">{t.alerts.typeExpired}</option>
                       <option value="Mislabeled">{t.alerts.typeMislabeled}</option>
+                      <option value="WrongDosage">Wrong Dosage</option>
+                      <option value="Suspicious">Suspicious</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
+                      Pharmacy name
+                    </label>
+                    <input
+                      value={form.pharmacyName}
+                      onChange={(e) => setForm((f) => ({ ...f, pharmacyName: e.target.value }))}
+                      placeholder="e.g. Lazz Pharma Dhanmondi"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
+                    />
                   </div>
 
                   <div>
@@ -129,6 +145,19 @@ export function ReportAlertModal({ open, onClose }: Props) {
                       required
                       value={form.location}
                       onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+                      placeholder="Area or city, e.g. Mirpur, Dhaka"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
+                      Batch number (optional)
+                    </label>
+                    <input
+                      value={form.batchNumber}
+                      onChange={(e) => setForm((f) => ({ ...f, batchNumber: e.target.value }))}
+                      placeholder="If visible on packaging"
                       className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
                     />
                   </div>

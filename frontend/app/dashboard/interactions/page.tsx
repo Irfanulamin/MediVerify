@@ -2,18 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import { Zap, Plus } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { InteractionResultCard } from "@/app/components/dashboard/InteractionResultCard";
+import { InteractionResultCard, type InteractionResult } from "@/app/components/dashboard/InteractionResultCard";
+import { MedicineAutocomplete } from "@/app/components/dashboard/MedicineAutocomplete";
 import { useLanguage } from "@/lib/i18n";
-
-interface InteractionResult {
-  safe: boolean;
-  severity?: "mild" | "moderate" | "severe";
-  explanation?: string;
-  recommendation?: string;
-}
 
 export default function InteractionsPage() {
   const { t } = useLanguage();
@@ -32,11 +26,16 @@ export default function InteractionsPage() {
     setResult(null);
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/verify/interactions`,
+        `/api/proxy/verify/interactions`,
         { medicine1: med1.trim(), medicine2: med2.trim() }
       );
-      setResult(res.data);
-    } catch {
+      setResult(res.data as InteractionResult);
+    } catch (err: any) {
+      console.error("[interactions] failed", {
+        status: err?.response?.status,
+        data: err?.response?.data,
+        message: err?.message,
+      });
       toast.error(t.interactions.errorGeneric);
     } finally {
       setLoading(false);
@@ -45,71 +44,74 @@ export default function InteractionsPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-8">
-        <div className="size-9 rounded-xl bg-[var(--foreground)] grid place-items-center flex-shrink-0">
-          <Zap className="size-4 text-[var(--background)]" strokeWidth={2.5} />
+      <header className="mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="size-10 rounded-xl bg-[var(--foreground)] grid place-items-center flex-shrink-0">
+            <Zap className="size-5 text-[var(--background)]" strokeWidth={2.2} />
+          </span>
+          <div>
+            <h1 className="font-display text-3xl md:text-[2.25rem] tracking-tight text-[var(--foreground)] leading-tight">
+              {t.interactions.title}
+            </h1>
+            <p className="text-[var(--muted-foreground)] text-sm mt-0.5">
+              {t.interactions.interactionsSubtext}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl tracking-tight text-[var(--foreground)]">
-            {t.interactions.title}
-          </h1>
-        </div>
-      </div>
+      </header>
 
       <motion.form
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         onSubmit={handleSubmit}
-        className="glass-card rounded-2xl p-6 mb-6"
+        className="glass-card rounded-2xl p-5 mb-6"
       >
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5">
-              {t.interactions.medicine1}
-            </label>
-            <input
-              type="text"
-              value={med1}
-              onChange={(e) => setMed1(e.target.value)}
-              placeholder={t.interactions.placeholder1}
-              className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--accent)] transition-smooth text-sm"
-            />
+        <div className="grid md:grid-cols-[1fr_auto_1fr] items-end gap-3 mb-4">
+          <MedicineAutocomplete
+            value={med1}
+            onChange={setMed1}
+            label={t.interactions.medicine1}
+            placeholder={t.interactions.placeholder1}
+            required
+          />
+          <div className="hidden md:flex items-center justify-center size-10 rounded-full bg-[var(--card)] text-[var(--muted-foreground)] mt-5">
+            <Plus className="size-4" />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5">
-              {t.interactions.medicine2}
-            </label>
-            <input
-              type="text"
-              value={med2}
-              onChange={(e) => setMed2(e.target.value)}
-              placeholder={t.interactions.placeholder2}
-              className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--accent)] transition-smooth text-sm"
-            />
-          </div>
+          <MedicineAutocomplete
+            value={med2}
+            onChange={setMed2}
+            label={t.interactions.medicine2}
+            placeholder={t.interactions.placeholder2}
+            required
+          />
         </div>
 
         <button
           type="submit"
           disabled={loading || !med1.trim() || !med2.trim()}
-          className="w-full px-5 py-3 rounded-xl text-sm font-medium bg-[var(--foreground)] text-[var(--background)] hover:opacity-85 transition-smooth disabled:opacity-40"
+          className="w-full px-5 py-3 rounded-xl text-sm font-medium bg-[var(--foreground)] text-[var(--background)] hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] transition-smooth disabled:opacity-40"
         >
           {loading ? t.interactions.checking : t.interactions.checkBtn}
         </button>
       </motion.form>
 
       {loading && (
-        <div className="rounded-2xl border border-[var(--border)] p-6 animate-pulse">
-          <div className="space-y-3">
-            <div className="h-5 bg-[var(--card)] rounded w-1/4" />
-            <div className="h-3 bg-[var(--card)] rounded w-3/4" />
-            <div className="h-3 bg-[var(--card)] rounded w-2/3" />
-          </div>
+        <div className="rounded-2xl border border-[var(--border)] p-6 animate-pulse space-y-3">
+          <div className="h-6 bg-[var(--card)] rounded w-1/3" />
+          <div className="h-3 bg-[var(--card)] rounded w-3/4" />
+          <div className="h-3 bg-[var(--card)] rounded w-2/3" />
+          <div className="h-3 bg-[var(--card)] rounded w-1/2" />
         </div>
       )}
 
       {result && !loading && <InteractionResultCard data={result} />}
+
+      {!result && !loading && (
+        <div className="text-center text-sm text-[var(--muted-foreground)] py-8">
+          Enter two medicine names above and press <span className="text-[var(--foreground)] font-medium">{t.interactions.checkBtn}</span>.
+        </div>
+      )}
     </div>
   );
 }

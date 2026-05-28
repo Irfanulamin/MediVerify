@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, LayoutDashboard, AlertTriangle, Users, Database, LogOut, Menu } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, AlertTriangle, Users, Database, LogOut, Menu, Inbox } from "lucide-react";
 import axios from "axios";
 import { useLanguage } from "@/lib/i18n";
 
@@ -14,6 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingReports, setPendingReports] = useState(0);
 
   useEffect(() => {
     axios.get("/api/auth/me").then((res) => {
@@ -27,14 +28,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     });
   }, [router]);
 
+  useEffect(() => {
+    if (!checked) return;
+    axios
+      .get("/api/proxy/unverified-reports/pending/count")
+      .then((res) => setPendingReports(res.data?.count ?? 0))
+      .catch(() => setPendingReports(0));
+  }, [checked, pathname]);
+
   const handleLogout = async () => {
     await axios.post("/api/auth/logout");
     router.push("/login");
   };
 
-  const navItems = [
+  const navItems: { href: string; label: string; icon: typeof LayoutDashboard; badge?: number }[] = [
     { href: "/admin", label: t.admin.overview, icon: LayoutDashboard },
     { href: "/admin/alerts", label: t.admin.alertsMgmt, icon: AlertTriangle },
+    { href: "/admin/reports", label: "Reports", icon: Inbox, badge: pendingReports },
     { href: "/admin/users", label: t.admin.users, icon: Users },
     { href: "/admin/medicines", label: t.admin.medicineDb, icon: Database },
   ];
@@ -60,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon, badge }) => {
           const active = pathname === href;
           return (
             <Link
@@ -74,7 +84,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               }`}
             >
               <Icon className="size-4 flex-shrink-0" strokeWidth={active ? 2.5 : 1.8} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge && badge > 0 ? (
+                <span
+                  className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                    active
+                      ? "bg-[var(--background)] text-[var(--foreground)]"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {badge}
+                </span>
+              ) : null}
             </Link>
           );
         })}

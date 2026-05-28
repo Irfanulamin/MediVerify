@@ -4,21 +4,20 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, LogOut, Home, Zap, AlertTriangle, Menu, History, Bookmark, GitCompare, User } from "lucide-react";
+import { ShieldCheck, LogOut, Zap, AlertTriangle, Menu, GitCompare } from "lucide-react";
 import axios from "axios";
 import { useLanguage } from "@/lib/i18n";
+import { LogoutConfirmModal } from "@/app/components/dashboard/LogoutConfirmModal";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { t, lang, toggle } = useLanguage();
-  const [userName, setUserName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
-    axios.get("/api/auth/me").then((res) => {
-      setUserName(res.data.email?.split("@")[0] ?? "");
-    }).catch(() => {
+    axios.get("/api/auth/me").catch(() => {
       router.replace("/login");
     });
   }, [router]);
@@ -29,13 +28,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const navItems = [
-    { href: "/dashboard", label: lang === "bn" ? "যাচাই" : "Verify", icon: ShieldCheck },
-    { href: "/dashboard/interactions", label: lang === "bn" ? "মিথস্ক্রিয়া" : "Interactions", icon: Zap },
-    { href: "/dashboard/alerts", label: lang === "bn" ? "সতর্কতা" : "Alerts", icon: AlertTriangle },
-    { href: "/dashboard/history", label: lang === "bn" ? "ইতিহাস" : "History", icon: History },
-    { href: "/dashboard/saved", label: lang === "bn" ? "সংরক্ষিত" : "Saved", icon: Bookmark },
-    { href: "/dashboard/compare", label: lang === "bn" ? "তুলনা" : "Compare", icon: GitCompare },
-    { href: "/dashboard/profile", label: lang === "bn" ? "প্রোফাইল" : "Profile", icon: User },
+    { href: "/dashboard", label: t.dashboard.navVerify, icon: ShieldCheck },
+    { href: "/dashboard/interactions", label: t.dashboard.navInteractions, icon: Zap },
+    { href: "/alerts", label: t.dashboard.navAlerts, icon: AlertTriangle },
+    { href: "/dashboard/compare", label: t.dashboard.navCompare, icon: GitCompare },
   ];
 
   const SidebarContent = () => (
@@ -57,8 +53,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-smooth ${
                 active
-                  ? "bg-[var(--foreground)] text-[var(--background)] font-medium"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card)]"
+                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-medium"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--accent)]/10"
               }`}
             >
               <Icon className="size-4 flex-shrink-0" strokeWidth={active ? 2.5 : 1.8} />
@@ -69,27 +65,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       <div className="px-3 pb-4 space-y-1 border-t border-[var(--border)] pt-3">
-        {userName && (
-          <p className="px-3 py-1 text-xs text-[var(--muted-foreground)] truncate">
-            {userName}
-          </p>
-        )}
         <button
           onClick={toggle}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card)] transition-smooth"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--accent)]/10 transition-smooth"
         >
           <span className="text-xs font-mono">{lang === "en" ? "EN" : "বাং"}</span>
-          {lang === "en" ? "বাংলা" : "English"}
+          {lang === "en" ? t.dashboard.langBengali : t.dashboard.langEnglish}
         </button>
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card)] transition-smooth"
-        >
-          <Home className="size-4" strokeWidth={1.8} />
-          {lang === "bn" ? "হোম" : "Home"}
-        </Link>
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutConfirm(true)}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--muted-foreground)] hover:text-red-600 hover:bg-red-50 transition-smooth"
         >
           <LogOut className="size-4" strokeWidth={1.8} />
@@ -100,9 +84,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="flex min-h-screen bg-[var(--background)]">
+    <div className="flex min-h-screen bg-mesh">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-56 flex-shrink-0 border-r border-[var(--border)] sticky top-0 h-screen">
+      <aside className="hidden md:flex flex-col w-56 flex-shrink-0 border-r border-[var(--border)] sticky top-0 h-screen glass">
         <SidebarContent />
       </aside>
 
@@ -118,7 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setSidebarOpen(false)}
             />
             <motion.aside
-              className="fixed inset-y-0 left-0 w-56 bg-[var(--background)] border-r border-[var(--border)] z-50 md:hidden"
+              className="fixed inset-y-0 left-0 w-56 border-r border-[var(--border)] z-50 md:hidden glass"
               initial={{ x: -224 }}
               animate={{ x: 0 }}
               exit={{ x: -224 }}
@@ -138,7 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Menu className="size-5 text-[var(--foreground)]" />
           </button>
           <span className="font-semibold text-sm">MediVerify</span>
-          <button onClick={handleLogout} className="p-1.5">
+          <button onClick={() => setShowLogoutConfirm(true)} className="p-1.5">
             <LogOut className="size-4 text-[var(--muted-foreground)]" />
           </button>
         </div>
@@ -147,6 +131,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      <LogoutConfirmModal
+        open={showLogoutConfirm}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </div>
   );
 }

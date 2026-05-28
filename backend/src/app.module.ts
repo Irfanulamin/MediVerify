@@ -11,6 +11,7 @@ import { AiModule } from './ai/ai.module';
 import { VerificationHistoryModule } from './verification-history/verification-history.module';
 import { SavedMedicinesModule } from './saved-medicines/saved-medicines.module';
 import { UsersModule } from './users/users.module';
+import { UnverifiedReportsModule } from './unverified-reports/unverified-reports.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { UsersModule } from './users/users.module';
     VerificationHistoryModule,
     SavedMedicinesModule,
     UsersModule,
+    UnverifiedReportsModule,
   ],
 })
 export class AppModule {}

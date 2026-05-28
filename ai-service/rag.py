@@ -14,7 +14,36 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-SIMILARITY_THRESHOLD = 1.2
+SIMILARITY_THRESHOLD = 0.9
+FUZZY_MATCH_DISTANCE = 0.4
+_DOSAGE_TOKEN_RE = __import__("re").compile(r"^\d+(mg|mcg|ml|iu|g)?$")
+
+
+def _name_tokens(name: str) -> set[str]:
+    out: set[str] = set()
+    for raw in (name or "").lower().replace("-", " ").split():
+        tok = raw.strip()
+        if len(tok) >= 3 and not _DOSAGE_TOKEN_RE.match(tok):
+            out.add(tok)
+    return out
+
+
+def _name_matches(input_name: str, candidate_name: str, distance: float) -> bool:
+    if distance < FUZZY_MATCH_DISTANCE:
+        return True
+    in_tokens = _name_tokens(input_name)
+    cand_tokens = _name_tokens(candidate_name)
+    if not in_tokens or not cand_tokens:
+        return False
+    for it in in_tokens:
+        for ct in cand_tokens:
+            if it in ct or ct in it:
+                return True
+    return False
+
+
+def _names_equal(a: str, b: str) -> bool:
+    return (a or "").strip().lower() == (b or "").strip().lower()
 
 _embedding_fn = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
 _client = chromadb.PersistentClient(path="./chroma_db")
@@ -32,7 +61,6 @@ alerts_collection = _client.get_or_create_collection(
     embedding_function=_embedding_fn,
 )
 
-# Kept for backwards compatibility (main.py /search imports `collection`)
 collection = medicines_collection
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -108,19 +136,42 @@ _INTERACTION_FALLBACK = {
 # ── Gemini helpers ────────────────────────────────────────────────────────────
 
 def _call_gemini(prompt: str, retries: int = 3) -> str:
+    last_err = ""
     for i in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             response = model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            last_err = str(e)
+            print(f"[Gemini] Error (attempt {i + 1}/{retries}): {last_err[:300]}")
+            if "RESOURCE_EXHAUSTED" in last_err and "PerDay" in last_err:
+                print("[Gemini] Daily quota exhausted — bailing out, no point retrying")
+                raise Exception(f"Gemini daily quota exhausted: {last_err[:200]}")
+            if "429" in last_err:
+                wait = (i + 1) * 5
+                print(f"[Gemini] Rate limited, waiting {wait}s")
+                time.sleep(wait)
+            else:
+                raise e
+    raise Exception(f"Gemini call failed after {retries} retries: {last_err[:200]}")
+
+
+def _call_gemini_vision(parts: list, retries: int = 3) -> str:
+    for i in range(retries):
+        try:
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            response = model.generate_content(parts)
+            time.sleep(2)
             return response.text.strip()
         except Exception as e:
             if "429" in str(e):
                 wait = (i + 1) * 10
-                print(f"[Gemini] Rate limited, waiting {wait}s (attempt {i + 1}/{retries})")
+                print(f"[Gemini] Rate limited (vision), waiting {wait}s (attempt {i + 1}/{retries})")
                 time.sleep(wait)
             else:
                 raise e
-    raise Exception("Gemini rate limit exceeded after all retries")
+    raise Exception("Gemini vision rate limit exceeded after all retries")
 
 
 def _clean_json(raw: str) -> str:
@@ -166,11 +217,103 @@ def _query_collection(col, text: str, n_results: int = 5) -> tuple[list, list, l
     return good_docs, good_metas, good_dists
 
 
+# ── Rule-based fallback when Gemini is unavailable ───────────────────────────
+
+def _score_from_chroma(
+    medicine_name: str,
+    med_metas: list,
+    med_dists: list,
+    alert_docs: list,
+    fast_path: bool = False,
+) -> dict:
+    """Compute a trust score purely from ChromaDB metadata — no Gemini call.
+
+    When fast_path=True the explanation is written as the primary response,
+    not as a Gemini-unavailable fallback message.
+    """
+    if not med_metas:
+        return {
+            "trust_score": 20,
+            "is_verified": False,
+            "manufacturer_match": False,
+            "explanation": (
+                f"'{medicine_name}' was not found in the verified medicine database. "
+                "It may be a new, regional, or misspelled medicine name. "
+                "Please consult a registered pharmacist."
+            ),
+            "fake_indicators": [
+                "Always verify packaging matches known brand design",
+                "Check for government drug registration number on pack",
+                "Purchase only from licensed pharmacies",
+            ],
+            "safe_alternatives": [],
+            "confidence_breakdown": {
+                "manufacturer_match": False,
+                "batch_format_valid": False,
+                "price_in_range": False,
+            },
+        }
+
+    best_idx = med_dists.index(min(med_dists))
+    best_dist = med_dists[best_idx]
+    meta = med_metas[best_idx]
+
+    manufacturer = meta.get("manufacturer", "")
+    fake_indicators = [i.strip() for i in meta.get("fakeIndicators", "").split(",") if i.strip()]
+    safe_alternatives = [a.strip() for a in meta.get("safeAlternatives", "").split(",") if a.strip()]
+    generic_name = meta.get("genericName", "")
+
+    manufacturer_known = bool(
+        manufacturer and manufacturer.lower() not in ("various", "unknown", "")
+    )
+    has_fake_alerts = len(alert_docs) > 0
+
+    # Distance 0.0 → 100 pts, distance 1.2 → 0 pts
+    distance_score = max(0, round((1.0 - best_dist / SIMILARITY_THRESHOLD) * 85))
+
+    trust_score = distance_score
+    if manufacturer_known:
+        trust_score = min(100, trust_score + 12)
+    if has_fake_alerts:
+        trust_score = max(0, trust_score - 20)
+
+    trust_score = max(0, min(100, trust_score))
+    is_verified = trust_score >= 60
+
+    parts = [f"'{medicine_name}' is in the MediVerify verified database"]
+    if generic_name:
+        parts.append(f"(generic: {generic_name})")
+    if manufacturer_known:
+        parts.append(f"manufactured by {manufacturer}")
+    if has_fake_alerts:
+        parts.append("⚠ Counterfeit versions of this medicine have been reported — inspect packaging carefully")
+    if not fast_path:
+        parts.append("(AI explanation temporarily unavailable; score based on database match)")
+
+    return {
+        "trust_score": trust_score,
+        "is_verified": is_verified,
+        "manufacturer_match": manufacturer_known,
+        "explanation": ". ".join(parts) + ".",
+        "fake_indicators": fake_indicators[:4] if fake_indicators else [
+            "Check hologram seal on packaging",
+            "Verify batch number on outer carton matches blister strip",
+            "Buy only from licensed pharmacies",
+        ],
+        "safe_alternatives": safe_alternatives[:3],
+        "confidence_breakdown": {
+            "manufacturer_match": manufacturer_known,
+            "batch_format_valid": False,
+            "price_in_range": False,
+        },
+    }
+
+
 # ── Core RAG functions ────────────────────────────────────────────────────────
 
 def get_from_gemini_knowledge(medicine_name: str) -> dict:
     """Fetch medicine info from Gemini when ChromaDB has no good match."""
-    cached = _cache_get(f"knowledge:{medicine_name}")
+    cached = _cache_get(f"knowledge:{medicine_name.lower()}")
     if cached:
         print(f"[Cache] Gemini knowledge cache hit: {medicine_name}")
         return cached
@@ -205,11 +348,31 @@ Return ONLY valid JSON, no markdown."""
     try:
         raw = _call_gemini(prompt)
         result = json.loads(_clean_json(raw))
-        _cache_set(f"knowledge:{medicine_name}", result)
+        _cache_set(f"knowledge:{medicine_name.lower()}", result)
         return result
     except Exception as e:
         print(f"[RAG] Gemini knowledge fallback error: {e}")
-        return _VERIFY_FALLBACK.copy()
+        # Return a meaningful unknown-medicine response instead of zero score
+        return {
+            "trust_score": 20,
+            "is_verified": False,
+            "manufacturer_match": False,
+            "explanation": (
+                f"'{medicine_name}' was not found in the verified database and AI analysis is temporarily unavailable. "
+                "Exercise caution — buy only from licensed pharmacies and verify with a pharmacist."
+            ),
+            "fake_indicators": [
+                "Always verify packaging matches known brand design",
+                "Check for government drug registration number",
+                "Purchase only from licensed pharmacies",
+            ],
+            "safe_alternatives": [],
+            "confidence_breakdown": {
+                "manufacturer_match": False,
+                "batch_format_valid": False,
+                "price_in_range": False,
+            },
+        }
 
 
 def _auto_store(medicine_name: str, data: dict) -> None:
@@ -262,22 +425,37 @@ def _auto_store(medicine_name: str, data: dict) -> None:
 
 
 def verify_medicine(medicine_name: str) -> dict:
-    cached = _cache_get(f"verify:{medicine_name}")
+    cached = _cache_get(f"verify:{medicine_name.lower()}")
     if cached:
         print(f"[Cache] Verify cache hit: {medicine_name}")
         return cached
 
-    med_docs, _, _ = _query_collection(medicines_collection, medicine_name, n_results=3)
+    med_docs, med_metas, med_dists = _query_collection(medicines_collection, medicine_name, n_results=3)
     mono_docs, _, _ = _query_collection(monographs_collection, medicine_name, n_results=2)
     alert_docs, _, _ = _query_collection(alerts_collection, medicine_name, n_results=3)
+
+    best_meta_name = med_metas[0].get("name", "") if med_metas else ""
+    best_dist = med_dists[0] if med_dists else 9.99
+    name_match = bool(med_metas) and _name_matches(medicine_name, best_meta_name, best_dist)
+
+    if med_metas and not name_match:
+        print(f"[RAG] Rejecting false-positive: {medicine_name!r} vs {best_meta_name!r} (dist={best_dist:.3f})")
+        med_docs, med_metas, med_dists = [], [], []
 
     has_results = any([med_docs, mono_docs, alert_docs])
 
     if not has_results:
         print(f"[RAG] Source: gemini_knowledge")
         result = get_from_gemini_knowledge(medicine_name)
-        if result is not _VERIFY_FALLBACK and result.get("trust_score") == 55:
+        if result.get("trust_score", 0) == 55:
             _auto_store(medicine_name, result)
+        _cache_set(f"verify:{medicine_name.lower()}", result)
+        return result
+
+    if name_match and _name_tokens(medicine_name) == _name_tokens(best_meta_name):
+        print(f"[RAG] Source: chromadb (fast path, no Gemini)")
+        result = _score_from_chroma(medicine_name, med_metas, med_dists, alert_docs, fast_path=True)
+        _cache_set(f"verify:{medicine_name.lower()}", result)
         return result
 
     print(f"[RAG] Source: chromadb")
@@ -319,58 +497,131 @@ Base your answer on the provided context. Return ONLY valid JSON, no markdown.""
         result = json.loads(_clean_json(raw))
         print(f"[RAG] Trust score: {result.get('trust_score')}")
         if result.get("trust_score", 0) > 0:
-            _cache_set(f"verify:{medicine_name}", result)
+            _cache_set(f"verify:{medicine_name.lower()}", result)
         return result
     except Exception as e:
-        print(f"[RAG] Gemini verify error: {e}")
-        return _VERIFY_FALLBACK.copy()
+        print(f"[RAG] Gemini unavailable ({e.__class__.__name__}), using ChromaDB score")
+        result = _score_from_chroma(medicine_name, med_metas, med_dists, alert_docs)
+        _cache_set(f"verify:{medicine_name.lower()}", result)
+        return result
 
 
 def check_interactions(medicine1: str, medicine2: str) -> dict:
-    cache_key = f"interactions:{min(medicine1, medicine2)}:{max(medicine1, medicine2)}"
+    a = (medicine1 or "").strip()
+    b = (medicine2 or "").strip()
+    if not a or not b:
+        return {
+            "is_safe": False,
+            "severity": "MODERATE",
+            "interaction_type": "Missing input",
+            "what_happens": "Both medicine names are required to check for interactions.",
+            "recommendation": "Enter the names of both medicines and try again.",
+            "can_take_together": False,
+            "time_gap_needed": None,
+            "consult_doctor": True,
+            "medicine1": medicine1,
+            "medicine2": medicine2,
+            "source": "validation_error",
+        }
+
+    key_a, key_b = sorted([a.lower(), b.lower()])
+    cache_key = f"interactions:{key_a}:{key_b}"
     cached = _cache_get(cache_key)
     if cached:
-        print(f"[Cache] Interaction cache hit: {medicine1} + {medicine2}")
+        print(f"[Cache] Interaction cache hit: {a} + {b}")
         return cached
 
-    med1_docs, _, _ = _query_collection(medicines_collection, medicine1, n_results=2)
-    med2_docs, _, _ = _query_collection(medicines_collection, medicine2, n_results=2)
-    mono1_docs, _, _ = _query_collection(monographs_collection, medicine1, n_results=1)
-    mono2_docs, _, _ = _query_collection(monographs_collection, medicine2, n_results=1)
+    med1_docs, med1_metas, _ = _query_collection(medicines_collection, a, n_results=2)
+    med2_docs, med2_metas, _ = _query_collection(medicines_collection, b, n_results=2)
+    mono1_docs, _, _ = _query_collection(monographs_collection, a, n_results=1)
+    mono2_docs, _, _ = _query_collection(monographs_collection, b, n_results=1)
 
     context_parts = []
     if med1_docs:
-        context_parts.append(f"MEDICINE 1 ({medicine1}):\n" + "\n".join(med1_docs))
+        context_parts.append(f"MEDICINE 1 ({a}):\n" + "\n".join(med1_docs))
     if mono1_docs:
-        context_parts.append(f"MONOGRAPH ({medicine1}):\n" + "\n".join(mono1_docs))
+        context_parts.append(f"MONOGRAPH ({a}):\n" + "\n".join(mono1_docs))
     if med2_docs:
-        context_parts.append(f"MEDICINE 2 ({medicine2}):\n" + "\n".join(med2_docs))
+        context_parts.append(f"MEDICINE 2 ({b}):\n" + "\n".join(med2_docs))
     if mono2_docs:
-        context_parts.append(f"MONOGRAPH ({medicine2}):\n" + "\n".join(mono2_docs))
-    context = "\n\n".join(context_parts).strip()
+        context_parts.append(f"MONOGRAPH ({b}):\n" + "\n".join(mono2_docs))
+    context = "\n\n".join(context_parts).strip() or "No verified database information for either medicine."
 
-    prompt = f"""Check drug interaction between "{medicine1}" and "{medicine2}".
+    prompt = f"""You are a pharmaceutical expert for Bangladesh.
+Check the drug interaction between:
+Medicine 1: {a}
+Medicine 2: {b}
 
-Context from verified medicine database:
+Database information:
 {context}
 
-Return JSON with exactly these fields:
+Return ONLY valid JSON with this exact shape:
 {{
   "is_safe": <boolean>,
-  "severity": "<safe|mild|moderate|severe>",
-  "explanation": "<explanation of interaction mechanism>",
-  "recommendation": "<specific actionable advice>"
+  "severity": "SAFE" | "MILD" | "MODERATE" | "SEVERE" | "DANGEROUS",
+  "interaction_type": "<short label, e.g. 'CYP3A4 inhibition' or 'No known interaction'>",
+  "what_happens": "<2-3 sentences in simple language explaining what happens if taken together>",
+  "recommendation": "<one specific actionable sentence>",
+  "can_take_together": <boolean>,
+  "time_gap_needed": "<e.g. '4 hours apart'>" | null,
+  "consult_doctor": <boolean>
 }}
-Return ONLY valid JSON."""
+
+Rules:
+- SAFE = no known interaction, fine to take together
+- MILD = minor interaction, usually fine but be aware
+- MODERATE = use caution, possibly space doses
+- SEVERE = avoid unless under medical supervision
+- DANGEROUS = do NOT take together under any circumstance
+- If unsure, prefer MODERATE with consult_doctor: true rather than guessing SAFE.
+- Return ONLY JSON, no markdown."""
+
+    def _meta_summary(meta_list, name):
+        if not meta_list:
+            return {"name": name, "generic_name": None, "manufacturer": None, "found": False}
+        m = meta_list[0]
+        return {
+            "name": m.get("name", name),
+            "generic_name": m.get("genericName"),
+            "manufacturer": m.get("manufacturer"),
+            "found": True,
+        }
+
+    medicine1_info = _meta_summary(med1_metas, a)
+    medicine2_info = _meta_summary(med2_metas, b)
 
     try:
         raw = _call_gemini(prompt)
         result = json.loads(_clean_json(raw))
+        result.setdefault("time_gap_needed", None)
+        result.setdefault("consult_doctor", False)
+        result["medicine1"] = medicine1_info
+        result["medicine2"] = medicine2_info
+        result["source"] = "gemini"
         _cache_set(cache_key, result)
         return result
     except Exception as e:
-        print(f"[RAG] Gemini interaction error: {e}")
-        return _INTERACTION_FALLBACK.copy()
+        print(f"[RAG] Gemini unavailable for interactions ({e.__class__.__name__}: {str(e)[:120]}), using rule-based fallback")
+        both_found = medicine1_info["found"] and medicine2_info["found"]
+        result = {
+            "is_safe": False,
+            "severity": "MODERATE",
+            "interaction_type": "AI analysis unavailable",
+            "what_happens": (
+                f"Both '{a}' and '{b}' are recognised in our verified medicine database, but the AI interaction analysis is temporarily unavailable."
+                if both_found else
+                f"At least one of '{a}' and '{b}' is not in our verified database, and the AI interaction analysis is temporarily unavailable."
+            ),
+            "recommendation": "AI analysis unavailable — consult a pharmacist or doctor before combining these medicines.",
+            "can_take_together": True,
+            "time_gap_needed": None,
+            "consult_doctor": True,
+            "medicine1": medicine1_info,
+            "medicine2": medicine2_info,
+            "source": "rule_based",
+        }
+        _cache_set(cache_key, result)
+        return result
 
 
 def chat(message: str, history: list) -> dict:
@@ -419,8 +670,16 @@ Assistant:"""
         response_text = _call_gemini(prompt)
         return {"response": response_text, "sources": sources}
     except Exception as e:
-        print(f"[RAG] Gemini chat error: {e}")
+        print(f"[RAG] Gemini chat unavailable ({e.__class__.__name__})")
+        if sources:
+            return {
+                "response": (
+                    f"I found these medicines related to your question: {', '.join(sources)}. "
+                    "AI explanation is temporarily unavailable. Please consult a pharmacist for detailed advice."
+                ),
+                "sources": sources,
+            }
         return {
-            "response": "I'm sorry, I couldn't process your request. Please consult a doctor.",
+            "response": "I'm sorry, I couldn't find information on that. Please consult a registered pharmacist or doctor.",
             "sources": [],
         }

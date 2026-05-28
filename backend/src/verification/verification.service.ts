@@ -1,9 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
-import { Medicine, MedicineDocument } from '../medicines/medicine.schema';
 import { VerificationHistoryService } from '../verification-history/verification-history.service';
 
 @Injectable()
@@ -14,38 +11,11 @@ export class VerificationService {
 
   constructor(
     private httpService: HttpService,
-    @InjectModel(Medicine.name) private medicineModel: Model<MedicineDocument>,
     private historyService: VerificationHistoryService,
   ) {
     this.pythonServiceUrl = process.env.PYTHON_SERVICE_URL ?? 'http://localhost:8000';
     this.aiServiceUrl = process.env.AI_SERVICE_URL ?? 'http://localhost:8001';
     this.internalHeaders = { 'x-internal-token': process.env.INTERNAL_SECRET ?? '' };
-  }
-
-  private async dbFallbackVerify(query: string) {
-    const medicine = await this.medicineModel
-      .findOne({ name: { $regex: query.trim(), $options: 'i' } })
-      .lean();
-    if (!medicine) {
-      return { result: 'UNKNOWN', trustScore: 30, source: 'database', medicine: null };
-    }
-    return {
-      result: 'VERIFIED',
-      trustScore: 90,
-      source: 'database',
-      medicine: {
-        id: (medicine as any)._id?.toString(),
-        name: medicine.name,
-        genericName: medicine.genericName,
-        manufacturer: medicine.manufacturer,
-        uses: medicine.uses,
-        sideEffects: medicine.sideEffects,
-        fakeIndicators: medicine.fakeIndicators,
-        safeAlternatives: medicine.safeAlternatives,
-        price: medicine.price,
-        requiresPrescription: medicine.requiresPrescription,
-      },
-    };
   }
 
   async verify(query: string, image?: string, userId?: string) {
@@ -54,13 +24,13 @@ export class VerificationService {
       const response = await firstValueFrom(
         this.httpService.post(
           `${this.pythonServiceUrl}/verify`,
-          { query, image },
+          { medicine_name: query, image_base64: image ?? null },
           { headers: this.internalHeaders },
         ),
       );
       result = response.data;
     } catch {
-      result = await this.dbFallbackVerify(query);
+      throw new HttpException('Verification service unavailable', HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     if (userId) {
@@ -108,6 +78,58 @@ export class VerificationService {
       return response.data;
     } catch {
       throw new HttpException('Explain service unavailable', HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  async investigate(body: Record<string, unknown>) {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(`${this.pythonServiceUrl}/investigate`, body, {
+          headers: this.internalHeaders,
+        }),
+      );
+      return response.data;
+    } catch {
+      throw new HttpException(
+        'Investigation service unavailable',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
+
+  async compare(name: string) {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.pythonServiceUrl}/compare`,
+          { name },
+          { headers: this.internalHeaders },
+        ),
+      );
+      return response.data;
+    } catch {
+      throw new HttpException(
+        'Compare service unavailable',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
+
+  async extractFromSpeech(transcript: string) {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.pythonServiceUrl}/extract-from-speech`,
+          { transcript },
+          { headers: this.internalHeaders },
+        ),
+      );
+      return response.data;
+    } catch {
+      throw new HttpException(
+        'Extraction service unavailable',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
   }
 

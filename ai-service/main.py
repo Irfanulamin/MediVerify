@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-from seed import seed_medicines, seed_monographs, seed_fake_alerts
+from seed import seed_medicines, seed_monographs, seed_fake_alerts, seed_manufacturers
 from rag import (
     medicines_collection,
     monographs_collection,
@@ -20,7 +20,10 @@ from rag import (
     chat,
     _query_collection,
 )
+from manufacturers import manufacturers_collection
 from vision import extract_medicine_from_image
+from investigate import investigate_medicine, extract_from_speech
+from compare import compare_medicines
 
 INTERNAL_SECRET = os.environ.get("INTERNAL_SECRET", "")
 BACKEND_ORIGIN = os.environ.get("BACKEND_ORIGIN", "http://localhost:3001")
@@ -31,10 +34,12 @@ async def lifespan(app: FastAPI):
     med_count = seed_medicines()
     mono_count = seed_monographs()
     alert_count = seed_fake_alerts()
+    mfr_count = seed_manufacturers()
     print("MediVerify AI Service Ready")
     print(f"  Medicines:       {med_count}")
     print(f"  Drug monographs: {mono_count}")
     print(f"  Fake alerts:     {alert_count}")
+    print(f"  Manufacturers:   {mfr_count}")
     yield
 
 
@@ -73,6 +78,23 @@ class InteractionsRequest(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     history: list[Any] = []
+
+
+class InvestigateRequest(BaseModel):
+    medicine_name: str
+    manufacturer: Optional[str] = None
+    batch_number: Optional[str] = None
+    expiry_date: Optional[str] = None
+    purchase_location: Optional[str] = None
+    price_paid: Optional[float] = None
+
+
+class ExtractRequest(BaseModel):
+    transcript: str
+
+
+class CompareRequest(BaseModel):
+    name: str
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -125,13 +147,32 @@ async def chat_endpoint(body: ChatRequest):
     return chat(body.message, body.history)
 
 
+@app.post("/investigate")
+async def investigate(body: InvestigateRequest):
+    return investigate_medicine(body.model_dump())
+
+
+@app.post("/extract-from-speech")
+async def extract(body: ExtractRequest):
+    return extract_from_speech(body.transcript)
+
+
+@app.post("/compare")
+async def compare(body: CompareRequest):
+    return compare_medicines(body.name)
+
+
 @app.get("/search")
 async def search(q: str = Query(default="")):
     if not q.strip():
         return []
     try:
         docs, metas, _ = _query_collection(medicines_collection, q, n_results=5)
-        return [m.get("name", "") for m in metas if m.get("name")]
+        return [
+            {"name": m.get("name", ""), "manufacturer": m.get("manufacturer", "")}
+            for m in metas
+            if m.get("name")
+        ]
     except Exception:
         return []
 
@@ -143,4 +184,5 @@ async def health():
         "medicines_count": medicines_collection.count(),
         "monographs_count": monographs_collection.count(),
         "alerts_count": alerts_collection.count(),
+        "manufacturers_count": manufacturers_collection.count(),
     }

@@ -42,4 +42,5 @@ export class VerificationController {
   async symptoms(@Body() body: { symptoms: string }) {
     return this.verificationService.symptoms(body.symptoms);
   }
+
 }
