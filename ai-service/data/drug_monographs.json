@@ -1,0 +1,256 @@
+[
+  {
+    "name": "Napa 500mg",
+    "generic_name": "Paracetamol (Acetaminophen)",
+    "category": "Analgesic, Antipyretic",
+    "mechanism_of_action": "Paracetamol primarily inhibits prostaglandin synthesis in the central nervous system, leading to its analgesic and antipyretic effects. It has a weak anti-inflammatory action due to its minimal peripheral prostaglandin inhibition.",
+    "uses": [
+      "Relief of mild to moderate pain (e.g., headache, muscle aches, menstrual pain)",
+      "Reduction of fever associated with various conditions",
+      "Symptomatic relief of cold and flu"
+    ],
+    "dosage": "Adults: 1-2 tablets (500mg-1000mg) every 4-6 hours as needed. Do not exceed 8 tablets (4000mg) in 24 hours.",
+    "contraindications": [
+      "Hypersensitivity to paracetamol or any excipients",
+      "Severe hepatic impairment or active liver disease"
+    ],
+    "interactions": [
+      "Warfarin (can enhance anticoagulant effect with prolonged use)",
+      "Alcohol (increases risk of hepatotoxicity)",
+      "Certain antiepileptic drugs (e.g., carbamazepine, phenobarbital) - increased risk of hepatotoxicity"
+    ],
+    "side_effects": [
+      "Skin rashes, allergic reactions",
+      "Nausea, vomiting",
+      "Overdose can cause severe hepatic necrosis"
+    ],
+    "fake_detection_guide": "Always check for the official manufacturer's hologram or security features on the pack. Ensure the packaging is sealed, lot number and expiry date are clearly printed, and the tablet appearance (color, shape, imprint) is consistent with genuine products. Purchase only from licensed pharmacies.",
+    "manufacturer_examples": [
+      "Beximco Pharmaceuticals Ltd.",
+      "Square Pharmaceuticals Ltd.",
+      "Incepta Pharmaceuticals Ltd."
+    ]
+  },
+  {
+    "name": "Napa Extra",
+    "generic_name": "Paracetamol and Caffeine",
+    "category": "Analgesic, Antipyretic, CNS Stimulant combination",
+    "mechanism_of_action": "Paracetamol primarily acts by inhibiting prostaglandin synthesis in the central nervous system, providing analgesic and antipyretic effects. Caffeine, a CNS stimulant, enhances the analgesic efficacy of paracetamol, possibly by increasing its absorption or potentiating its action, and reduces fatigue.",
+    "uses": [
+      "Relief of mild to moderate pain (e.g., headache, migraine, dental pain, menstrual pain, muscular aches)",
+      "Reduction of fever associated with colds and flu",
+      "Symptomatic relief of cold and flu symptoms"
+    ],
+    "dosage": "Adults and children over 12 years: 1-2 tablets every 4-6 hours as needed. Do not exceed 8 tablets (4000mg Paracetamol, 520mg Caffeine) in 24 hours. Not recommended for children under 12 years.",
+    "contraindications": [
+      "Hypersensitivity to paracetamol, caffeine, or any component of the formulation",
+      "Severe hepatic impairment",
+      "Severe renal impairment"
+    ],
+    "interactions": [
+      "Warfarin and other oral anticoagulants: Prolonged regular use of paracetamol may increase the anticoagulant effect, increasing the risk of bleeding.",
+      "Alcohol: Concomitant use with paracetamol increases the risk of hepatotoxicity.",
+      "Metoclopramide or Domperidone: May increase the absorption rate of paracetamol.",
+      "Cholestyramine: May reduce the absorption of paracetamol.",
+      "CNS stimulants and MAOIs: Concomitant use with caffeine may increase stimulant effects and adverse reactions."
+    ],
+    "side_effects": [
+      "Nausea, abdominal discomfort",
+      "Insomnia, nervousness, restlessness, palpitations (due to caffeine)",
+      "Allergic reactions (e.g., skin rash, itching), blood dyscrasias (rarely, e.g., thrombocytopenia, leukopenia)"
+    ],
+    "fake_detection_guide": "Always purchase from licensed pharmacies or authorized distributors. Check the packaging for crisp, clear printing, correct spelling, and consistent batch numbers, manufacturing, and expiry dates on both the outer carton and blister strips. Authentic products generally feature high-quality blister packs and tablet consistency.",
+    "manufacturer_examples": [
+      "Square Pharmaceuticals Ltd.",
+      "Beximco Pharmaceuticals Ltd."
+    ]
+  },
+  {
+    "name": "Ace 500mg",
+    "generic_name": "Paracetamol (Acetaminophen)",
+    "category": "Analgesic, Antipyretic",
+    "mechanism_of_action": "Paracetamol is believed to exert its analgesic effect primarily through inhibition of prostaglandin synthesis in the central nervous system (CNS), rather than peripherally. Its antipyretic action is achieved by direct action on the hypothalamic heat-regulating center, increasing peripheral vasodilation and sweating, leading to heat dissipation.",
+    "uses": [
+      "Relief of mild to moderate pain (e.g., headache, muscle aches, menstrual pain, toothache)",
+      "Reduction of fever associated with various conditions (e.g., common cold, flu, infections)",
+      "Relief of symptoms of cold and flu"
+    ],
+    "dosage": "Adults: 500mg to 1000mg (1 or 2 tablets) orally every 4-6 hours as needed. Do not exceed 4000mg (4g) in 24 hours.",
+    "contraindications": [
+      "Known hypersensitivity to paracetamol or any component of the formulation",
+      "Severe hepatic impairment or active liver disease"
+    ],
+    "interactions": [
+      "Warfarin and other coumarin anticoagulants: Prolonged regular use of paracetamol may potentiate the anticoagulant effect, increasing the risk of bleeding.",
+      "Alcohol: Concomitant use with chronic alcohol intake significantly increases the risk of paracetamol-induced hepatotoxicity.",
+      "Metoclopramide and Domperidone: May increase the absorption rate of paracetamol.",
+      "Cholestyramine: May reduce the absorption of paracetamol if administered within one hour."
+    ],
+    "side_effects": [
+      "Nausea",
+      "Vomiting",
+      "Abdominal pain",
+      "Allergic reactions (e.g., skin rash, urticaria, pruritus, angioedema) - rare but serious",
+      "Hepatotoxicity (liver damage) - especially with overdose or chronic high doses",
+      "Blood dyscrasias (e.g., thrombocytopenia, leukopenia) - rare"
+    ],
+    "fake_detection_guide": "To identify fake Ace 500mg in Bangladesh, check for high-quality packaging with consistent printing, clear batch number, and expiry date without smudges or misspellings. Authentic blister strips are securely sealed, difficult to puncture, and have clear brand embossing, while fake ones might feel flimsy or have irregular seals. Examine the tablet itself for uniform color (typically white), consistent size and shape, and a clear 'ACE' imprint or score line if present, avoiding tablets that crumble easily or have an unusual odor.",
+    "manufacturer_examples": [
+      "Square Pharmaceuticals Ltd.",
+      "Beximco Pharmaceuticals Ltd."
+    ]
+  },
+  {
+    "name": "Amodis 400mg",
+    "generic_name": "Metronidazole",
+    "category": "Antiprotozoal, Antibiotic (Nitroimidazole)",
+    "mechanism_of_action": "Metronidazole acts as a pro-drug, which is activated by reduction in anaerobic environments found in susceptible organisms. The reduced form generates reactive cytotoxic free radicals that disrupt DNA helical structure and inhibit nucleic acid synthesis, leading to cell death.",
+    "uses": [
+      "Amoebiasis (intestinal and hepatic)",
+      "Giardiasis",
+      "Trichomoniasis",
+      "Bacterial Vaginosis",
+      "Anaerobic bacterial infections (e.g., intra-abdominal, skin and soft tissue, dental)"
+    ],
+    "dosage": "Oral: For adults, 400-800 mg three times daily for 5-10 days, depending on the infection severity and type. For Trichomoniasis, a single dose of 2g or 200mg three times daily for 7 days is common.",
+    "contraindications": [
+      "Hypersensitivity to metronidazole or other nitroimidazole derivatives",
+      "First trimester of pregnancy (relative contraindication, use only if essential)",
+      "Active organic disease of the CNS"
+    ],
+    "interactions": [
+      "Alcohol (disulfiram-like reaction)",
+      "Warfarin (enhances anticoagulant effect)",
+      "Disulfiram (psychotic reactions)",
+      "Lithium (increases plasma levels of lithium)",
+      "Phenobarbital/Phenytoin (reduces metronidazole plasma levels)"
+    ],
+    "side_effects": [
+      "Nausea, vomiting, abdominal cramps",
+      "Metallic taste in mouth",
+      "Headache, dizziness",
+      "Darkening of urine",
+      "Peripheral neuropathy (rare, with prolonged high doses)"
+    ],
+    "fake_detection_guide": "Examine the packaging for clear printing, accurate spelling of 'Amodis 400mg', and genuine Aristopharma logos. Verify the batch number, manufacturing, and expiry dates on both the carton and blister strip, ensuring they are identical and legible. Authentic tablets are typically white, round, biconvex, and uniform in appearance, with a distinct score line or debossing if present.",
+    "manufacturer_examples": [
+      "Aristopharma Ltd.",
+      "Square Pharmaceuticals Ltd.",
+      "Incepta Pharmaceuticals Ltd."
+    ]
+  },
+  {
+    "name": "Seclo 20mg",
+    "generic_name": "Esomeprazole",
+    "category": "Proton Pump Inhibitor (PPI)",
+    "mechanism_of_action": "Esomeprazole selectively inhibits the H+/K+-ATPase (proton pump) in the gastric parietal cells. By covalently binding to this enzyme, it prevents the final step in acid production, leading to a profound and prolonged reduction of gastric acid secretion.",
+    "uses": [
+      "Gastroesophageal Reflux Disease (GERD)",
+      "Erosive Esophagitis",
+      "Zollinger-Ellison Syndrome",
+      "Treatment and prophylaxis of NSAID-associated gastric ulcers",
+      "Eradication of Helicobacter pylori (in combination with antibiotics)"
+    ],
+    "dosage": "For adults, 20 mg or 40 mg once daily, taken at least one hour before a meal. Duration typically ranges from 4 to 8 weeks, depending on the indication.",
+    "contraindications": [
+      "Hypersensitivity to esomeprazole, other substituted benzimidazoles, or any component of the formulation.",
+      "Concomitant use with nelfinavir."
+    ],
+    "interactions": [
+      "Drugs requiring an acidic gastric pH for absorption (e.g., ketoconazole, atazanavir, nelfinavir).",
+      "Clopidogrel (may reduce antiplatelet effect).",
+      "Warfarin (potential for increased INR and prothrombin time).",
+      "Methotrexate (increased serum methotrexate levels)."
+    ],
+    "side_effects": [
+      "Headache",
+      "Diarrhea or constipation",
+      "Nausea/Vomiting",
+      "Abdominal pain",
+      "Flatulence"
+    ],
+    "fake_detection_guide": "Check for the authentic manufacturer's logo and holographic seal (e.g., Square Pharma's logo) on the packaging, ensuring it's not easily peeled or smudged. Verify the batch number, manufacturing date, and expiry date on both the outer carton and the individual blister strip; they should match and be clearly printed, not stamped poorly. Inspect the packaging quality, print clarity, and color accuracy; genuine products have high-quality printing without spelling errors or blurred images.",
+    "manufacturer_examples": [
+      "Square Pharmaceuticals Ltd.",
+      "Beximco Pharmaceuticals Ltd."
+    ]
+  },
+  {
+    "name": "Losectil 20mg",
+    "generic_name": "Omeprazole",
+    "category": "Proton Pump Inhibitor (PPI)",
+    "mechanism_of_action": "Omeprazole is a proton pump inhibitor that irreversibly blocks the H+/K+-ATPase enzyme system, also known as the proton pump, in the gastric parietal cells. This action inhibits the final step in acid production, effectively reducing both basal and stimulated gastric acid secretion.",
+    "uses": [
+      "Treatment of Duodenal Ulcers",
+      "Treatment of Gastric Ulcers",
+      "Gastroesophageal Reflux Disease (GERD)",
+      "Zollinger-Ellison Syndrome",
+      "Eradication of Helicobacter pylori (as part of a multi-drug regimen)"
+    ],
+    "dosage": "The standard adult dosage for most indications is 20 mg orally once daily, preferably in the morning before a meal. Dosage and duration may vary based on specific indication and severity, up to 40 mg daily or twice daily for severe conditions or H. pylori eradication.",
+    "contraindications": [
+      "Hypersensitivity to omeprazole, substituted benzimidazoles, or any component of the formulation.",
+      "Concomitant use with nelfinavir."
+    ],
+    "interactions": [
+      "Clopidogrel (may reduce antiplatelet effect due to CYP2C19 inhibition)",
+      "Warfarin (may increase INR and bleeding risk)",
+      "Digoxin (may increase digoxin levels)",
+      "Ketoconazole, Itraconazole, Erlotinib (reduced absorption due to increased gastric pH)",
+      "Methotrexate (may increase methotrexate levels)"
+    ],
+    "side_effects": [
+      "Headache",
+      "Nausea",
+      "Diarrhea",
+      "Abdominal pain",
+      "Flatulence",
+      "Dizziness"
+    ],
+    "fake_detection_guide": "To identify fake Losectil 20mg in Bangladesh, inspect the packaging for high-quality printing, clear fonts, and consistent colors, as genuine products from Square Pharmaceuticals maintain a high standard. Check for the manufacturer's specific security features like holograms or seals, ensuring they are intact and not easily removable or duplicated. Finally, examine the capsule itself for uniform size, color, and consistency, as counterfeit capsules may appear irregular, discolored, or have an unusual smell.",
+    "manufacturer_examples": [
+      "Square Pharmaceuticals Ltd.",
+      "Incepta Pharmaceuticals Ltd."
+    ]
+  },
+  {
+    "name": "Maxpro 20mg",
+    "generic_name": "Esomeprazole",
+    "category": "Proton Pump Inhibitor (PPI)",
+    "mechanism_of_action": "Esomeprazole is a proton pump inhibitor that specifically inhibits the H+/K+-ATPase enzyme system (the proton pump) in the gastric parietal cells. This irreversible inhibition blocks the final step in gastric acid secretion, significantly reducing both basal and stimulated acid output.",
+    "uses": [
+      "Gastroesophageal Reflux Disease (GERD)",
+      "Healing of erosive esophagitis",
+      "Maintenance of healing of erosive esophagitis",
+      "Symptomatic GERD",
+      "Zollinger-Ellison Syndrome",
+      "Peptic Ulcer Disease (in combination with antibiotics for H. pylori eradication)"
+    ],
+    "dosage": "20mg once daily, typically taken at least one hour before a meal, for an adult. Duration depends on the indication and physician's advice.",
+    "contraindications": [
+      "Hypersensitivity to esomeprazole, substituted benzimidazoles, or any excipients of the formulation.",
+      "Concomitant use with nelfinavir."
+    ],
+    "interactions": [
+      "Clopidogrel (reduced antiplatelet effect)",
+      "Atazanavir and Nelfinavir (reduced antiretroviral plasma levels)",
+      "Methotrexate (potential for increased methotrexate levels and toxicity)",
+      "Drugs dependent on gastric pH for absorption (e.g., ketoconazole, iron salts, digoxin)"
+    ],
+    "side_effects": [
+      "Headache",
+      "Nausea",
+      "Diarrhea",
+      "Abdominal pain",
+      "Flatulence",
+      "Constipation",
+      "Dry mouth"
+    ],
+    "fake_detection_guide": "Verify the packaging for crisp, high-quality printing, correct spelling, and the presence of a genuine Square Pharmaceuticals hologram. Check the blister strip for uniform sealing and ensure the capsules are consistent in color, size, and appearance (Maxpro 20mg capsules are typically light pink with 'E 20' marking). Always purchase from reputable, licensed pharmacies to ensure product authenticity and check for proper batch number and expiry date.",
+    "manufacturer_examples": [
+      "Square Pharmaceuticals Ltd.",
+      "Incepta Pharmaceuticals Ltd.",
+      "Beximco Pharmaceuticals Ltd."
+    ]
+  }
+]

@@ -1,72 +1,58 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { CheckCircle2, Trash2 } from "lucide-react";
+import { CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/lib/i18n";
 
-interface Alert {
+interface AlertItem {
   _id: string;
   medicineName: string;
   alertType: string;
-  location: string;
-  description: string;
-  isVerified: boolean;
+  pharmacyName?: string;
+  location?: string;
   reportedBy?: string;
+  isVerified: boolean;
   createdAt: string;
 }
 
-type Filter = "all" | "verified" | "unverified";
+type Tab = "pending" | "verified";
 
 export default function AdminAlertsPage() {
   const { t } = useLanguage();
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<Filter>("all");
+  const [tab, setTab] = useState<Tab>("pending");
 
-  const fetchAlerts = async () => {
-    try {
-      const r = await axios.get("/api/proxy/alerts/all");
-      setAlerts(r.data);
-    } catch {
-      toast.error("Failed to load alerts");
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    axios.get("/api/proxy/alerts/all")
+      .then((r) => setAlerts(r.data))
+      .catch(() => toast.error("Failed to load alerts"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const verify = async (id: string) => {
+    await axios.patch(`/api/proxy/alerts/${id}`, { isVerified: true });
+    setAlerts((prev) => prev.map((a) => (a._id === id ? { ...a, isVerified: true } : a)));
+    toast.success("Alert verified");
   };
 
-  const approve = async (id: string) => {
-    try {
-      await axios.patch(`/api/proxy/alerts/${id}`, {});
-      setAlerts((prev) => prev.map((a) => (a._id === id ? { ...a, isVerified: true } : a)));
-      toast.success("Alert approved");
-    } catch {
-      toast.error("Failed to approve");
-    }
+  const reject = async (id: string) => {
+    await axios.delete(`/api/proxy/alerts/${id}`);
+    setAlerts((prev) => prev.filter((a) => a._id !== id));
+    toast.success("Alert rejected");
   };
 
   const remove = async (id: string) => {
-    try {
-      await axios.delete(`/api/proxy/alerts/${id}`);
-      setAlerts((prev) => prev.filter((a) => a._id !== id));
-      toast.success("Alert deleted");
-    } catch {
-      toast.error("Failed to delete");
-    }
+    await axios.delete(`/api/proxy/alerts/${id}`);
+    setAlerts((prev) => prev.filter((a) => a._id !== id));
+    toast.success("Alert deleted");
   };
 
-  useEffect(() => {
-    fetchAlerts();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const filtered = alerts.filter((a) => {
-    if (filter === "verified") return a.isVerified;
-    if (filter === "unverified") return !a.isVerified;
-    return true;
-  });
+  const pending = alerts.filter((a) => !a.isVerified);
+  const verified = alerts.filter((a) => a.isVerified);
+  const items = tab === "pending" ? pending : verified;
 
   return (
     <div>
@@ -74,19 +60,18 @@ export default function AdminAlertsPage() {
         <h1 className="font-display text-2xl md:text-3xl tracking-tight text-[var(--foreground)]">
           {t.admin.alertsMgmt}
         </h1>
-        {/* Filter tabs */}
-        <div className="flex gap-1 p-1 rounded-xl bg-[var(--card)]">
-          {(["all", "verified", "unverified"] as Filter[]).map((f) => (
+        <div className="flex gap-1 p-1 rounded-xl bg-[var(--card)] border border-[var(--border)]">
+          {(["pending", "verified"] as Tab[]).map((tb) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-smooth ${
-                filter === f
-                  ? "bg-[var(--background)] text-[var(--foreground)] shadow-soft"
+              key={tb}
+              onClick={() => setTab(tb)}
+              className={`px-4 py-1.5 rounded-lg text-xs font-medium capitalize transition-smooth ${
+                tab === tb
+                  ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
-              {f === "all" ? "All" : f === "verified" ? "Verified" : "Unverified"}
+              {tb === "pending" ? `Pending (${pending.length})` : `Verified (${verified.length})`}
             </button>
           ))}
         </div>
@@ -95,69 +80,67 @@ export default function AdminAlertsPage() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-16 rounded-xl bg-[var(--card)] animate-pulse" />
+            <div key={i} className="h-14 rounded-xl bg-[var(--card)] animate-pulse" />
           ))}
         </div>
-      ) : filtered.length === 0 ? (
-        <p className="text-[var(--muted-foreground)] text-sm">No alerts found.</p>
+      ) : items.length === 0 ? (
+        <div className="glass-card rounded-2xl p-10 text-center text-sm text-[var(--muted-foreground)]">
+          No {tab} alerts.
+        </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
+        <div className="glass-card overflow-x-auto rounded-2xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--card)]">
-                {[t.admin.colMedicine, t.admin.colType, t.admin.colLocation, "Reported By", t.admin.colDate, t.admin.colVerified, t.admin.colActions].map((col) => (
-                  <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+              <tr className="border-b border-[var(--border)]">
+                {[t.admin.colMedicine, t.admin.colType, "Pharmacy", t.admin.colLocation, t.admin.colDate, t.admin.colActions].map((col) => (
+                  <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider whitespace-nowrap">
                     {col}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map((alert, i) => (
-                <motion.tr
-                  key={alert._id}
-                  className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--card)] transition-smooth"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.04 }}
-                >
+              {items.map((alert) => (
+                <tr key={alert._id} className="border-b border-[var(--border)] last:border-0 hover:bg-white/30 transition-smooth">
                   <td className="px-4 py-3 font-medium text-[var(--foreground)]">{alert.medicineName}</td>
-                  <td className="px-4 py-3 text-[var(--muted-foreground)]">{alert.alertType}</td>
-                  <td className="px-4 py-3 text-[var(--muted-foreground)]">{alert.location}</td>
-                  <td className="px-4 py-3 text-[var(--muted-foreground)] text-xs">{alert.reportedBy || "—"}</td>
-                  <td className="px-4 py-3 text-[var(--muted-foreground)] whitespace-nowrap">
+                  <td className="px-4 py-3">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                      {alert.alertType}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-[var(--muted-foreground)]">{alert.pharmacyName || "—"}</td>
+                  <td className="px-4 py-3 text-[var(--muted-foreground)]">{alert.location || "—"}</td>
+                  <td className="px-4 py-3 text-[var(--muted-foreground)] whitespace-nowrap text-xs">
                     {new Date(alert.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    {alert.isVerified ? (
-                      <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium">
-                        <CheckCircle2 className="size-3.5" /> Yes
-                      </span>
-                    ) : (
-                      <span className="text-[var(--muted-foreground)] text-xs">No</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {!alert.isVerified && (
+                      {tab === "pending" ? (
+                        <>
+                          <button
+                            onClick={() => verify(alert._id)}
+                            className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-smooth"
+                          >
+                            <CheckCircle2 className="size-3" /> Verify
+                          </button>
+                          <button
+                            onClick={() => reject(alert._id)}
+                            className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-smooth"
+                          >
+                            <XCircle className="size-3" /> Reject
+                          </button>
+                        </>
+                      ) : (
                         <button
-                          onClick={() => approve(alert._id)}
-                          className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-smooth"
+                          onClick={() => remove(alert._id)}
+                          className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-smooth"
                         >
-                          <CheckCircle2 className="size-3" />
-                          {t.admin.approveBtn}
+                          <Trash2 className="size-3" /> {t.admin.deleteBtn}
                         </button>
                       )}
-                      <button
-                        onClick={() => remove(alert._id)}
-                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-smooth"
-                      >
-                        <Trash2 className="size-3" />
-                        {t.admin.deleteBtn}
-                      </button>
                     </div>
                   </td>
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>

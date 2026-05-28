@@ -13,7 +13,7 @@ import {
   type InvestigationResult,
   type InvestigationInput,
 } from "@/app/components/dashboard/InvestigationResultCard";
-import { SearchTipsPopover } from "@/app/components/dashboard/SearchTipsPopover";
+import { SearchTips } from "@/app/components/dashboard/SearchTips";
 import { useLanguage } from "@/lib/i18n";
 
 interface VerifyResult {
@@ -78,6 +78,7 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [voiceExtracting, setVoiceExtracting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const suggestionLockRef = useRef(false);
 
@@ -206,6 +207,30 @@ export default function DashboardPage() {
     }
   };
 
+  const handleQuickVoice = async (transcript: string) => {
+    setVoiceExtracting(true);
+    try {
+      const res = await axios.post("/api/proxy/extract-from-speech", { transcript });
+      const name: string | null = res.data?.medicine_name || null;
+      if (name) {
+        setQuery(name);
+        runVerify(name);
+      } else {
+        setQuery(transcript);
+        toast(t.dashboard.speechNoFields);
+      }
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        toast.error(t.dashboard.loginToVoice);
+      } else {
+        setQuery(transcript);
+        runVerify(transcript);
+      }
+    } finally {
+      setVoiceExtracting(false);
+    }
+  };
+
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -320,16 +345,13 @@ export default function DashboardPage() {
             onSubmit={handleTextSubmit}
             className="glass-card rounded-2xl p-5 mb-6"
           >
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">
-                  {t.dashboard.quickSearchHeading}
-                </p>
-                <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                  {t.dashboard.quickSearchSubtext}
-                </p>
-              </div>
-              <SearchTipsPopover />
+            <div className="mb-4">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">
+                {t.dashboard.quickSearchHeading}
+              </p>
+              <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                {t.dashboard.quickSearchSubtext}
+              </p>
             </div>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -364,7 +386,8 @@ export default function DashboardPage() {
               </div>
               <VoiceInput
                 onTranscript={(txt) => setQuery(txt)}
-                onSubmit={(txt) => runVerify(txt)}
+                onSubmit={handleQuickVoice}
+                extracting={voiceExtracting}
               />
               <button
                 type="submit"
@@ -374,6 +397,7 @@ export default function DashboardPage() {
                 {loading ? t.dashboard.verifying : t.dashboard.verifyBtn}
               </button>
             </div>
+            <SearchTips className="mt-3" />
           </motion.form>
         )}
 

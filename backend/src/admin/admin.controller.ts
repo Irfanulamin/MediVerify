@@ -17,6 +17,41 @@ export class AdminController {
 
   @Get('users')
   getUsers() {
-    return this.adminService.getUsers();
+    return this.adminService.getUsersWithVerificationCount();
+  }
+
+  @Get('analytics/verifications')
+  getVerificationsLast7Days() {
+    return this.adminService.getVerificationsLast7Days();
+  }
+
+  @Get('analytics/verifications-detail')
+  getVerificationsDetail() {
+    return this.adminService.getVerificationsDetail();
+  }
+
+  @Get('analytics/top-medicines')
+  getTopMedicines() {
+    return this.adminService.getTopMedicines();
+  }
+
+  @Get('analytics/alert-types')
+  getAlertTypeBreakdown() {
+    return this.adminService.getAlertTypeBreakdown();
+  }
+
+  @Get('analytics/verdicts')
+  getVerdictBreakdown() {
+    return this.adminService.getVerdictBreakdown();
+  }
+
+  @Get('analytics/unfound-medicines')
+  getUnfoundMedicines() {
+    return this.adminService.getUnfoundMedicines();
+  }
+
+  @Get('activity/recent')
+  getRecentActivity() {
+    return this.adminService.getRecentActivity();
   }
 }

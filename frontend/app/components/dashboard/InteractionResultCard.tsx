@@ -31,12 +31,12 @@ interface Props {
   data: InteractionResult;
 }
 
-const severityStyle: Record<InteractionSeverity, { bg: string; border: string; text: string; Icon: typeof CheckCircle2 }> = {
-  SAFE: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-800", Icon: CheckCircle2 },
-  MILD: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-800", Icon: AlertCircle },
-  MODERATE: { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-800", Icon: AlertTriangle },
-  SEVERE: { bg: "bg-red-50", border: "border-red-200", text: "text-red-800", Icon: ShieldAlert },
-  DANGEROUS: { bg: "bg-red-100", border: "border-red-300", text: "text-red-900", Icon: Skull },
+const severityStyle: Record<InteractionSeverity, { bg: string; border: string; text: string; top: string; pill: string; Icon: typeof CheckCircle2 }> = {
+  SAFE: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-800", top: "border-t-emerald-500", pill: "bg-emerald-100 text-emerald-700", Icon: CheckCircle2 },
+  MILD: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-800", top: "border-t-amber-500", pill: "bg-amber-100 text-amber-700", Icon: AlertCircle },
+  MODERATE: { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-800", top: "border-t-orange-500", pill: "bg-orange-100 text-orange-700", Icon: AlertTriangle },
+  SEVERE: { bg: "bg-red-50", border: "border-red-200", text: "text-red-800", top: "border-t-red-500", pill: "bg-red-100 text-red-700", Icon: ShieldAlert },
+  DANGEROUS: { bg: "bg-red-100", border: "border-red-300", text: "text-red-900", top: "border-t-red-600", pill: "bg-red-200 text-red-800", Icon: Skull },
 };
 
 function MedicineSummary({ info, label }: { info?: InteractionMedicineInfo; label: string }) {
@@ -73,9 +73,18 @@ export function InteractionResultCard({ data }: Props) {
   };
   const headline = headlineMap[data.severity] ?? data.severity;
 
+  const severityLabelMap: Record<InteractionSeverity, string> = {
+    SAFE: t.interactions.severitySafe,
+    MILD: t.interactions.severityMild,
+    MODERATE: t.interactions.severityModerate,
+    SEVERE: t.interactions.severitySevere,
+    DANGEROUS: t.interactions.severityDangerous,
+  };
+  const severityLabel = severityLabelMap[data.severity] ?? data.severity;
+
   return (
     <motion.div
-      className="glass-card rounded-2xl overflow-hidden"
+      className={`glass-card rounded-2xl overflow-hidden border-t-4 ${style.top}`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -84,10 +93,10 @@ export function InteractionResultCard({ data }: Props) {
         <div className="flex items-center gap-3">
           <Icon className={`size-7 ${style.text}`} strokeWidth={2} />
           <div className="flex-1 min-w-0">
-            <p className={`text-[10px] font-semibold uppercase tracking-widest ${style.text} opacity-70`}>
-              {data.severity}
-            </p>
-            <p className={`text-lg font-semibold ${style.text} leading-tight`}>{headline}</p>
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${style.pill}`}>
+              {severityLabel}
+            </span>
+            <p className={`text-lg font-semibold ${style.text} leading-tight mt-1`}>{headline}</p>
             {data.interaction_type && data.interaction_type.toLowerCase() !== "no known interaction" && (
               <p className={`text-xs ${style.text} opacity-80 mt-0.5`}>{data.interaction_type}</p>
             )}

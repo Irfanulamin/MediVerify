@@ -85,13 +85,32 @@ export class MedicinesService implements OnModuleInit {
     }
   }
 
+  private async reEmbed(medicine: any): Promise<void> {
+    const pythonUrl = process.env.PYTHON_SERVICE_URL ?? 'http://localhost:8000';
+    const internalToken = process.env.INTERNAL_SECRET ?? '';
+    try {
+      await firstValueFrom(
+        this.httpService.post(
+          `${pythonUrl}/admin/medicines/reembed`,
+          { medicine },
+          { headers: { 'x-internal-token': internalToken } },
+        ),
+      );
+    } catch {
+      // fire-and-forget — MongoDB save already succeeded
+    }
+  }
+
   async create(dto: Partial<Medicine>) {
-    return this.medicineModel.create(dto);
+    const saved = await this.medicineModel.create(dto);
+    this.reEmbed(saved).catch(() => {});
+    return saved;
   }
 
   async update(id: string, dto: Partial<Medicine>) {
     const med = await this.medicineModel.findByIdAndUpdate(id, dto, { new: true });
     if (!med) throw new NotFoundException('Medicine not found');
+    this.reEmbed(med).catch(() => {});
     return med;
   }
 

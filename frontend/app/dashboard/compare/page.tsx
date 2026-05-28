@@ -6,6 +6,8 @@ import { GitCompare, Search } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { CompareResultCard, type CompareResult } from "@/app/components/dashboard/CompareResultCard";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Skeleton } from "@/app/components/ui/Skeleton";
 import { useLanguage } from "@/lib/i18n";
 
 export default function ComparePage() {
@@ -79,28 +81,33 @@ export default function ComparePage() {
       </motion.form>
 
       {loading && (
-        <div className="space-y-4 animate-pulse">
-          <div className="h-7 bg-[var(--card)] rounded w-2/3" />
-          <div className="flex gap-2">
+        <div className="space-y-4">
+          <Skeleton className="h-7 w-2/3" />
+          <div className="flex flex-wrap gap-2">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-9 bg-[var(--card)] rounded-xl w-32" />
+              <Skeleton key={i} className="h-9 w-32 rounded-xl" />
             ))}
           </div>
-          <div className="flex gap-3">
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}
+          >
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-44 bg-[var(--card)] rounded-2xl w-[260px] flex-shrink-0" />
+              <Skeleton key={i} className="h-44 rounded-2xl" />
             ))}
           </div>
-          <div className="h-48 bg-[var(--card)] rounded-2xl" />
+          <Skeleton className="h-48 rounded-2xl" />
         </div>
       )}
 
       {result && !loading && <CompareResultCard data={result} />}
 
       {!result && !loading && (
-        <div className="text-center text-sm text-[var(--muted-foreground)] py-8">
-          {t.dashboard.compareEmptyHint}
-        </div>
+        <EmptyState
+          icon={GitCompare}
+          title={t.dashboard.compareHeading}
+          subtitle={t.dashboard.compareEmptyHint}
+        />
       )}
     </div>
   );

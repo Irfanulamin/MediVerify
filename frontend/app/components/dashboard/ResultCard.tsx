@@ -103,6 +103,13 @@ export function ResultCard({ data, onAlternativeClick }: Props) {
   const showExplanation = !!data.explanation && data.foundInDatabase !== false;
   const visibleUses = showAllUses ? uses : uses.slice(0, 4);
 
+  const verdictMap = {
+    VERIFIED: { Icon: CheckCircle2, label: t.dashboard.resultVerified, cls: "border-emerald-500 bg-emerald-50/70 text-emerald-800" },
+    SUSPICIOUS: { Icon: AlertTriangle, label: t.dashboard.resultSuspicious, cls: "border-red-500 bg-red-50/70 text-red-800" },
+    UNKNOWN: { Icon: HelpCircle, label: t.dashboard.resultUnknown, cls: "border-amber-500 bg-amber-50/70 text-amber-800" },
+  } as const;
+  const verdict = verdictMap[data.result] ?? verdictMap.UNKNOWN;
+
   return (
     <>
       <motion.div
@@ -111,6 +118,14 @@ export function ResultCard({ data, onAlternativeClick }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
+        {/* Verdict banner — left-border accent, surfaces overall result */}
+        <div className="p-4 pb-0">
+          <div className={`flex items-center gap-2.5 rounded-xl border-l-4 px-4 py-3 ${verdict.cls}`}>
+            <verdict.Icon className="size-5 flex-shrink-0" strokeWidth={2} />
+            <span className="text-sm font-semibold">{verdict.label}</span>
+          </div>
+        </div>
+
         {/* Section 1 — Overview */}
         <div className="p-6 border-b border-[var(--border)]">
           <div className="flex items-start justify-between gap-4">
@@ -267,14 +282,16 @@ export function ResultCard({ data, onAlternativeClick }: Props) {
                 {t.dashboard.howToSpotFake}
               </p>
             </div>
-            <ul className="space-y-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {fakeIndicators.map((item, i) => (
-                <li key={i} className="text-sm text-red-800 flex items-start gap-2">
-                  <span className="mt-1.5 size-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                <span
+                  key={i}
+                  className="text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-200"
+                >
                   {item}
-                </li>
+                </span>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
@@ -284,13 +301,13 @@ export function ResultCard({ data, onAlternativeClick }: Props) {
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
               {t.dashboard.safeAlternatives}
             </p>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
+            <div className="flex flex-wrap gap-2">
               {safeAlternatives.map((alt, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => onAlternativeClick?.(alt)}
-                  className="snap-start flex-shrink-0 inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--foreground)] transition-smooth whitespace-nowrap"
+                  className="inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition-smooth"
                 >
                   {alt}
                   <ChevronRight className="size-3" />

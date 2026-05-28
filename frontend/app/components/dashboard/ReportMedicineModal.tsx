@@ -65,7 +65,7 @@ export function ReportMedicineModal({ open, onClose, prefillName, prefillManufac
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/40 z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

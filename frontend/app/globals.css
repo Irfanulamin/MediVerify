@@ -14,6 +14,29 @@
   --card: #f4f4f5;
   --accent: #6d28d9;
   --accent-foreground: #ffffff;
+
+  /* Semantic colors (status / verdicts / toasts) */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --info: var(--accent);
+
+  /* Border radius scale */
+  --radius-input: 6px;
+  --radius-btn: 8px;
+  --radius-card: 12px;
+  --radius-modal: 20px;
+
+  /* Spacing scale */
+  --space-section: 24px;
+  --space-card: 16px;
+  --space-element: 12px;
+
+  /* Focus ring (inputs, buttons, interactive) */
+  --focus-ring: 0 0 0 3px rgba(124, 58, 237, 0.2);
+
+  /* Standard interaction transition */
+  --transition: all 0.2s ease;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────────── */
@@ -119,6 +142,125 @@ body {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ─── Focus states ─────────────────────────────────────────────────────────── */
+/* Purple ring on keyboard focus for all form fields and interactive elements */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* ─── Button system ────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-btn);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+/* ─── Skeleton loading shimmer ─────────────────────────────────────────────── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--card);
+  border-radius: var(--radius-card);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+
+/* ─── Custom scrollbar (data tables, comparison table) ─────────────────────── */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.scrollbar-custom::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }
 
 /* ─── Bengali language overrides ───────────────────────────────────────────── */

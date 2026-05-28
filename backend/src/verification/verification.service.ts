@@ -38,9 +38,11 @@ export class VerificationService {
         .logVerification(userId, {
           query,
           result: result.result,
-          trustScore: result.trustScore,
-          medicineName: result.medicine?.name ?? result.medicineName,
+          trustScore: result.trustScore ?? result.trust_score ?? 0,
+          medicineName: result.medicine?.name ?? result.medicineName ?? result.medicine_name,
           source: result.source ?? 'python',
+          foundInDatabase: result.foundInDatabase ?? result.found_in_database ?? false,
+          searchType: 'verify',
         })
         .catch(() => {});
     }

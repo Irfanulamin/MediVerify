@@ -12,6 +12,11 @@ DATA_DIR = Path(__file__).parent / "data"
 
 
 def seed_medicines() -> int:
+    count = medicines_collection.count()
+    if count > 0:
+        print(f"Already seeded, skipping ({count} medicines)")
+        return count
+
     data_path = DATA_DIR / "medicines.json"
     with open(data_path, encoding="utf-8") as f:
         medicines = json.load(f)
@@ -81,7 +86,6 @@ def seed_monographs() -> int:
 
     data_path = DATA_DIR / "drug_monographs.json"
     if not data_path.exists():
-        print("drug_monographs.json not found. Run generate_datasets.py first.")
         return 0
 
     with open(data_path, encoding="utf-8") as f:
@@ -128,7 +132,6 @@ def seed_fake_alerts() -> int:
 
     data_path = DATA_DIR / "fake_alerts.json"
     if not data_path.exists():
-        print("fake_alerts.json not found. Run generate_datasets.py first.")
         return 0
 
     with open(data_path, encoding="utf-8") as f:

@@ -11,6 +11,8 @@ export class VerificationHistory {
   @Prop({ default: 0 }) trustScore: number;
   @Prop() medicineName?: string;
   @Prop() source?: string;
+  @Prop({ default: false }) foundInDatabase: boolean;
+  @Prop() searchType?: string;
 }
 
 export const VerificationHistorySchema = SchemaFactory.createForClass(VerificationHistory);

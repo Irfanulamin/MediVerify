@@ -177,6 +177,44 @@ async def search(q: str = Query(default="")):
         return []
 
 
+class ReembedRequest(BaseModel):
+    medicine: dict
+
+
+@app.post("/admin/medicines/reembed")
+async def reembed_medicine(body: ReembedRequest):
+    med = body.medicine
+    name = med.get("name", "")
+    if not name:
+        return {"status": "error", "detail": "name is required"}
+    med_id = name.lower().replace(" ", "-").replace("/", "-")
+    uses = med.get("uses") or []
+    side_effects = med.get("sideEffects") or []
+    fake_indicators = med.get("fakeIndicators") or []
+    safe_alternatives = med.get("safeAlternatives") or []
+    doc = (
+        f"Medicine: {name}. "
+        f"Generic: {med.get('genericName', '')}. "
+        f"Manufacturer: {med.get('manufacturer', '')}. "
+        f"Uses: {', '.join(uses)}. "
+        f"Side effects: {', '.join(side_effects)}. "
+        f"Price (BDT): {med.get('price', '')}. "
+        f"Fake indicators: {', '.join(fake_indicators)}. "
+        f"Safe alternatives: {', '.join(safe_alternatives)}."
+    )
+    meta = {
+        "name": name,
+        "genericName": med.get("genericName", ""),
+        "manufacturer": med.get("manufacturer", ""),
+        "uses": ", ".join(uses),
+        "sideEffects": ", ".join(side_effects),
+        "fakeIndicators": ", ".join(fake_indicators),
+        "safeAlternatives": ", ".join(safe_alternatives),
+    }
+    medicines_collection.upsert(ids=[med_id], documents=[doc], metadatas=[meta])
+    return {"status": "ok", "id": med_id}
+
+
 @app.get("/health")
 async def health():
     return {

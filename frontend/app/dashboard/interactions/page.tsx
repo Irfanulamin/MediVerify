@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Plus } from "lucide-react";
+import { Zap, ArrowLeftRight } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { InteractionResultCard, type InteractionResult } from "@/app/components/dashboard/InteractionResultCard";
 import { MedicineAutocomplete } from "@/app/components/dashboard/MedicineAutocomplete";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Skeleton } from "@/app/components/ui/Skeleton";
 import { useLanguage } from "@/lib/i18n";
 
 export default function InteractionsPage() {
@@ -15,6 +17,11 @@ export default function InteractionsPage() {
   const [med2, setMed2] = useState("");
   const [result, setResult] = useState<InteractionResult | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const swap = () => {
+    setMed1(med2);
+    setMed2(med1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,9 +82,15 @@ export default function InteractionsPage() {
             placeholder={t.interactions.placeholder1}
             required
           />
-          <div className="hidden md:flex items-center justify-center size-10 rounded-full bg-[var(--card)] text-[var(--muted-foreground)] mt-5">
-            <Plus className="size-4" />
-          </div>
+          <button
+            type="button"
+            onClick={swap}
+            aria-label={t.interactions.swap}
+            title={t.interactions.swap}
+            className="focus-ring mx-auto flex size-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--accent)] hover:border-[var(--accent)] active:scale-95 transition-smooth md:mt-5"
+          >
+            <ArrowLeftRight className="size-4 rotate-90 md:rotate-0" />
+          </button>
           <MedicineAutocomplete
             value={med2}
             onChange={setMed2}
@@ -97,20 +110,18 @@ export default function InteractionsPage() {
       </motion.form>
 
       {loading && (
-        <div className="rounded-2xl border border-[var(--border)] p-6 animate-pulse space-y-3">
-          <div className="h-6 bg-[var(--card)] rounded w-1/3" />
-          <div className="h-3 bg-[var(--card)] rounded w-3/4" />
-          <div className="h-3 bg-[var(--card)] rounded w-2/3" />
-          <div className="h-3 bg-[var(--card)] rounded w-1/2" />
+        <div className="glass-card rounded-2xl p-6 space-y-3">
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-3 w-3/4" />
+          <Skeleton className="h-3 w-2/3" />
+          <Skeleton className="h-3 w-1/2" />
         </div>
       )}
 
       {result && !loading && <InteractionResultCard data={result} />}
 
       {!result && !loading && (
-        <div className="text-center text-sm text-[var(--muted-foreground)] py-8">
-          Enter two medicine names above and press <span className="text-[var(--foreground)] font-medium">{t.interactions.checkBtn}</span>.
-        </div>
+        <EmptyState icon={Zap} title={t.interactions.emptyTitle} subtitle={t.interactions.emptySubtitle} />
       )}
     </div>
   );

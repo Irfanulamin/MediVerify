@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff } from "lucide-react";
+import { Mic, MicOff, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 
 interface Props {
   onTranscript: (text: string) => void;
   onSubmit: (text: string) => void;
+  extracting?: boolean;
 }
 
 interface SpeechRecognitionEvent {
@@ -35,7 +36,7 @@ declare global {
 const LANG_KEY = "mv_voice_lang";
 type Lang = "en-US" | "bn-BD";
 
-export function VoiceInput({ onTranscript, onSubmit }: Props) {
+export function VoiceInput({ onTranscript, onSubmit, extracting = false }: Props) {
   const { t } = useLanguage();
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(true);
@@ -139,16 +140,23 @@ export function VoiceInput({ onTranscript, onSubmit }: Props) {
       <button
         type="button"
         onClick={toggle}
-        title={`Voice search (${langLabel})`}
+        disabled={extracting}
+        title={extracting ? "Extracting medicine name…" : `Voice search (${langLabel})`}
         className={`p-3 rounded-xl border transition-smooth ${
-          listening
+          extracting
+            ? "border-[var(--border)] text-[var(--muted-foreground)] opacity-60 cursor-wait"
+            : listening
             ? "border-red-300 bg-red-50 text-red-600"
             : "border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--foreground)]"
         }`}
       >
         <div className="relative">
-          <Mic className="size-4" />
-          {listening && (
+          {extracting ? (
+            <Sparkles className="size-4 animate-pulse" />
+          ) : (
+            <Mic className="size-4" />
+          )}
+          {listening && !extracting && (
             <motion.span
               className="absolute -top-1 -right-1 size-2 rounded-full bg-red-500"
               animate={{ opacity: [1, 0.3, 1] }}

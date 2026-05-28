@@ -24,7 +24,12 @@ export default function LoginPage() {
       await axios.post("/api/auth/session", {
         access_token: res.data.access_token,
       });
-      router.push("/dashboard");
+      try {
+        const payload = JSON.parse(atob(res.data.access_token.split(".")[1]));
+        router.push(payload?.role === "admin" ? "/admin" : "/dashboard");
+      } catch {
+        router.push("/dashboard");
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string | string[] } } };
       const msg =

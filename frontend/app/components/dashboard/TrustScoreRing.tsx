@@ -10,7 +10,7 @@ interface Props {
 export function TrustScoreRing({ score }: Props) {
   const [displayed, setDisplayed] = useState(0);
   const size = 120;
-  const stroke = 10;
+  const stroke = 13;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (displayed / 100) * circumference;
@@ -30,6 +30,13 @@ export function TrustScoreRing({ score }: Props) {
         height={size}
         style={{ position: "absolute", transform: "rotate(-90deg)" }}
       >
+        <defs>
+          <linearGradient id="trustScoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#dc2626" />
+            <stop offset="50%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#16a34a" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -43,7 +50,7 @@ export function TrustScoreRing({ score }: Props) {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={color}
+          stroke="url(#trustScoreGradient)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}

@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Info, Award, Baby, UserCircle2, Tag, Sparkles } from "lucide-react";
+import { Info, Award, Baby, UserCircle2, Tag, Sparkles, Copy } from "lucide-react";
+import toast from "react-hot-toast";
+import { useLanguage } from "@/lib/i18n";
 
 export interface CompareVariant {
   brand_name: string;
@@ -78,24 +80,37 @@ function ReliabilityRing({ score }: { score?: number }) {
   );
 }
 
-function RecommendationPill({ icon: Icon, label, value, tone }: { icon: typeof Award; label: string; value?: string | null; tone: string }) {
+function RecommendationPill({ icon: Icon, label, value, tone, onCopy, title }: { icon: typeof Award; label: string; value?: string | null; tone: string; onCopy: () => void; title: string }) {
   if (!value) return null;
   return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs ${tone}`}>
+    <button
+      type="button"
+      onClick={onCopy}
+      title={title}
+      className={`focus-ring inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs transition-smooth hover:brightness-95 active:scale-95 ${tone}`}
+    >
       <Icon className="size-3.5" />
       <span className="font-medium opacity-80">{label}:</span>
       <span className="font-semibold">{value}</span>
-    </div>
+      <Copy className="size-3 opacity-50" />
+    </button>
   );
 }
 
 export function CompareResultCard({ data }: Props) {
+  const { t } = useLanguage();
   const { generic_name, variants, recommendation, comparison_summary } = data;
+
+  const copy = (val?: string | null) => {
+    if (!val) return;
+    navigator.clipboard?.writeText(val);
+    toast.success(`${t.compare.copied}: ${val}`);
+  };
 
   if (!variants || variants.length === 0) {
     return (
       <div className="glass-card rounded-2xl p-10 text-center">
-        <p className="text-sm text-[var(--muted-foreground)]">{comparison_summary || "No variants found."}</p>
+        <p className="text-sm text-[var(--muted-foreground)]">{comparison_summary || t.compare.noVariants}</p>
       </div>
     );
   }
@@ -109,51 +124,61 @@ export function CompareResultCard({ data }: Props) {
     >
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">
-          Comparing {variants.length} variants of
+          {t.compare.comparing} {variants.length} {t.compare.variantsOf}
         </p>
         <h2 className="font-display text-2xl tracking-tight text-[var(--foreground)] capitalize">{generic_name}</h2>
       </div>
 
-      {/* Recommendation pills */}
+      {/* Recommendation pills — click to copy */}
       <div className="flex flex-wrap gap-2">
         <RecommendationPill
           icon={Award}
-          label="Best Overall"
+          label={t.compare.bestOverall}
           value={recommendation.best_overall}
           tone="bg-emerald-50 text-emerald-800 border-emerald-200"
+          title={t.compare.clickToCopy}
+          onCopy={() => copy(recommendation.best_overall)}
         />
         <RecommendationPill
           icon={Baby}
-          label="Best for Children"
+          label={t.compare.bestForChildren}
           value={recommendation.best_for_children}
           tone="bg-blue-50 text-blue-800 border-blue-200"
+          title={t.compare.clickToCopy}
+          onCopy={() => copy(recommendation.best_for_children)}
         />
         <RecommendationPill
           icon={UserCircle2}
-          label="Best for Elderly"
+          label={t.compare.bestForElderly}
           value={recommendation.best_for_elderly}
           tone="bg-purple-50 text-purple-800 border-purple-200"
+          title={t.compare.clickToCopy}
+          onCopy={() => copy(recommendation.best_for_elderly)}
         />
         <RecommendationPill
           icon={Tag}
-          label="Most Affordable"
+          label={t.compare.mostAffordable}
           value={recommendation.most_affordable}
           tone="bg-amber-50 text-amber-800 border-amber-200"
+          title={t.compare.clickToCopy}
+          onCopy={() => copy(recommendation.most_affordable)}
         />
         <RecommendationPill
           icon={Sparkles}
-          label="Most Available"
+          label={t.compare.mostAvailable}
           value={recommendation.most_available}
           tone="bg-slate-50 text-slate-800 border-slate-200"
+          title={t.compare.clickToCopy}
+          onCopy={() => copy(recommendation.most_available)}
         />
       </div>
 
-      {/* Variant cards */}
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
+      {/* Variant cards — responsive grid, hover lift */}
+      <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
         {variants.map((v) => (
           <div
             key={v.brand_name}
-            className="snap-start flex-shrink-0 w-[260px] glass-card rounded-2xl p-4"
+            className="glass-card rounded-2xl p-4 hover:-translate-y-1 hover:shadow-soft transition-smooth"
           >
             <div className="flex items-start justify-between gap-2 mb-3">
               <div className="min-w-0">
@@ -165,17 +190,19 @@ export function CompareResultCard({ data }: Props) {
             <div className="space-y-2">
               {v.price_bdt != null && (
                 <p className="text-sm">
-                  <span className="text-[var(--muted-foreground)] text-xs">Price: </span>
+                  <span className="text-[var(--muted-foreground)] text-xs">{t.compare.priceLabel}: </span>
                   <span className="font-semibold text-[var(--foreground)]">{v.price_bdt} BDT</span>
                 </p>
               )}
               {v.best_for && (
-                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">{v.best_for}</p>
+                <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)]">
+                  {v.best_for}
+                </span>
               )}
               <div className="flex flex-wrap gap-1.5">
                 {v.side_effect_severity && (
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${severityClass[v.side_effect_severity] ?? severityClass.MEDIUM}`}>
-                    {v.side_effect_severity} side effects
+                    {v.side_effect_severity} {t.compare.sideEffectsSuffix}
                   </span>
                 )}
                 {v.value_for_money && (
@@ -189,12 +216,12 @@ export function CompareResultCard({ data }: Props) {
         ))}
       </div>
 
-      {/* Comparison table */}
-      <div className="overflow-x-auto glass-card rounded-2xl">
+      {/* Comparison table — sticky first column, alternating rows */}
+      <div className="overflow-x-auto scrollbar-custom glass-card rounded-2xl">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[var(--border)] bg-[var(--card)]">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Feature</th>
+              <th className="sticky left-0 z-10 bg-[var(--card)] text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">{t.compare.feature}</th>
               {variants.map((v) => (
                 <th key={v.brand_name} className="text-left px-4 py-3 text-xs font-semibold text-[var(--foreground)] tracking-wide whitespace-nowrap">
                   {v.brand_name}
@@ -204,14 +231,14 @@ export function CompareResultCard({ data }: Props) {
           </thead>
           <tbody>
             {[
-              { label: "Price (BDT)", get: (v: CompareVariant) => (v.price_bdt != null ? `${v.price_bdt}` : "—") },
-              { label: "Strength", get: (v: CompareVariant) => v.tablet_strength || "—" },
-              { label: "Suitable age", get: (v: CompareVariant) => v.suitable_for_age || "—" },
-              { label: "Prescription", get: (v: CompareVariant) => (v.prescription_needed ? "Yes" : "No") },
-              { label: "Availability", get: (v: CompareVariant) => v.availability || "—" },
+              { label: t.compare.rowPrice, get: (v: CompareVariant) => (v.price_bdt != null ? `${v.price_bdt}` : "—") },
+              { label: t.compare.rowStrength, get: (v: CompareVariant) => v.tablet_strength || "—" },
+              { label: t.compare.rowAge, get: (v: CompareVariant) => v.suitable_for_age || "—" },
+              { label: t.compare.rowPrescription, get: (v: CompareVariant) => (v.prescription_needed ? t.compare.yes : t.compare.no) },
+              { label: t.compare.rowAvailability, get: (v: CompareVariant) => v.availability || "—" },
             ].map((row) => (
-              <tr key={row.label} className="border-b border-[var(--border)] last:border-0">
-                <td className="px-4 py-3 text-xs font-medium text-[var(--muted-foreground)] whitespace-nowrap">{row.label}</td>
+              <tr key={row.label} className="border-b border-[var(--border)] last:border-0 even:bg-[var(--card)]/40">
+                <td className="sticky left-0 bg-[var(--background)] px-4 py-3 text-xs font-medium text-[var(--muted-foreground)] whitespace-nowrap">{row.label}</td>
                 {variants.map((v) => (
                   <td key={v.brand_name} className="px-4 py-3 text-[var(--foreground)]">{row.get(v)}</td>
                 ))}
@@ -226,7 +253,8 @@ export function CompareResultCard({ data }: Props) {
         <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 flex items-start gap-2">
           <Info className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-700 mb-1">AI summary</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-700 mb-1">{t.compare.aiSummary}</p>
+
             <p className="text-sm text-blue-900 leading-relaxed">{comparison_summary}</p>
           </div>
         </div>
