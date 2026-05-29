@@ -14,7 +14,11 @@ if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
 SIMILARITY_THRESHOLD = 0.9
-FUZZY_MATCH_DISTANCE = 0.4
+# Cosine distance (1 - cosine_similarity) from Pinecone/Gemini embeddings. Only a
+# near-identical embedding short-circuits the name check; everything else must pass
+# the token-overlap test below. (Was 0.4, tuned for ChromaDB's L2 distance, which
+# wrongly matched unrelated meds like "Diapro" to in-DB drugs at ~0.35.)
+FUZZY_MATCH_DISTANCE = 0.15
 _DOSAGE_TOKEN_RE = __import__("re").compile(r"^\d+(mg|mcg|ml|iu|g)?$")
 
 
@@ -340,20 +344,21 @@ Return ONLY valid JSON, no markdown."""
         return result
     except Exception as e:
         print(f"[RAG] Gemini knowledge fallback error: {e}")
-        # Return a meaningful unknown-medicine response instead of zero score
+        # AI is down/rate-limited AND the medicine isn't in our DB — we genuinely
+        # cannot assess it. Return an explicit "unavailable" state (NOT a 0%/low
+        # score that looks like a fake verdict). `ai_unavailable` tells the caller
+        # not to cache or store this, so it retries cleanly when the API recovers.
         return {
-            "trust_score": 20,
+            "trust_score": None,
             "is_verified": False,
+            "ai_unavailable": True,
             "manufacturer_match": False,
             "explanation": (
-                f"'{medicine_name}' was not found in the verified database and AI analysis is temporarily unavailable. "
-                "Exercise caution — buy only from licensed pharmacies and verify with a pharmacist."
+                f"AI verification is temporarily unavailable (rate limit), and '{medicine_name}' "
+                "isn't in the local verified database yet. This is NOT a fake verdict — "
+                "please try again in a minute."
             ),
-            "fake_indicators": [
-                "Always verify packaging matches known brand design",
-                "Check for government drug registration number",
-                "Purchase only from licensed pharmacies",
-            ],
+            "fake_indicators": [],
             "safe_alternatives": [],
             "confidence_breakdown": {
                 "manufacturer_match": False,
@@ -430,11 +435,19 @@ def verify_medicine(medicine_name: str) -> dict:
         print(f"[RAG] Rejecting false-positive: {medicine_name!r} vs {best_meta_name!r} (dist={best_dist:.3f})")
         med_docs, med_metas, med_dists = [], [], []
 
-    has_results = any([med_docs, mono_docs, alert_docs])
+    # Only a real medicine-name match counts as "found". Loose monograph/alert
+    # semantic hits alone must NOT trigger the suspicious-scoring path for an
+    # otherwise-unknown medicine — fall through to Gemini knowledge instead, which
+    # returns real info about legitimate meds that just aren't in our small DB yet.
+    has_results = bool(med_docs)
 
     if not has_results:
         print(f"[RAG] Source: gemini_knowledge")
         result = get_from_gemini_knowledge(medicine_name)
+        # Don't cache or auto-store when the API was down / medicine not verifiable.
+        if result.get("ai_unavailable"):
+            print(f"[RAG] AI unavailable for {medicine_name!r} — not caching/storing")
+            return result
         if result.get("trust_score", 0) == 55:
             _auto_store(medicine_name, result)
         _cache_set(f"verify:{medicine_name.lower()}", result)
@@ -488,9 +501,11 @@ Base your answer on the provided context. Return ONLY valid JSON, no markdown.""
             _cache_set(f"verify:{medicine_name.lower()}", result)
         return result
     except Exception as e:
-        print(f"[RAG] Gemini unavailable ({e.__class__.__name__}), using ChromaDB score")
+        print(f"[RAG] Gemini unavailable ({e.__class__.__name__}), using database-only score")
+        # Degraded (AI down) — return a DB-based score but DON'T cache it, so the
+        # next lookup gets the richer Gemini answer once the API recovers.
         result = _score_from_chroma(medicine_name, med_metas, med_dists, alert_docs)
-        _cache_set(f"verify:{medicine_name.lower()}", result)
+        result["ai_unavailable"] = True
         return result
 
 

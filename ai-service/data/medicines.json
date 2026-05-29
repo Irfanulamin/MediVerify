@@ -1713,5 +1713,109 @@
       "D-Vita (ACI Pharmaceuticals)",
       "Sun-D (Renata Limited)"
     ]
+  },
+  {
+    "name": "Metformin",
+    "genericName": "Metformin",
+    "manufacturer": "Square Pharmaceuticals Ltd.",
+    "uses": [
+      "Management of Type 2 Diabetes Mellitus, often used as first-line therapy.",
+      "Management of Polycystic Ovary Syndrome (PCOS), particularly for improving menstrual regularity and ovulation.",
+      "Prevention of Type 2 Diabetes in individuals at high risk (e.g., pre-diabetic patients with elevated BMI)."
+    ],
+    "sideEffects": [
+      "Nausea",
+      "Vomiting",
+      "Diarrhea",
+      "Abdominal pain or discomfort",
+      "Loss of appetite",
+      "Metallic taste in mouth",
+      "Lactic acidosis (rare but serious, especially in patients with kidney problems)",
+      "Vitamin B12 deficiency (with long-term use)"
+    ],
+    "fakeIndicators": [
+      "Poor quality packaging with spelling errors, blurry print, or inconsistent branding.",
+      "Tablets that differ in size, shape, color, or markings from authentic products.",
+      "Absence of batch number, manufacturing date, or expiry date, or these details appear tampered with.",
+      "Unusually low price that is significantly below market average.",
+      "Lack of security features (e.g., hologram, scratch code) that are usually present on genuine products from reputable manufacturers."
+    ],
+    "safeAlternatives": [
+      "Sulfonylureas (e.g., Gliclazide, Glimepiride)",
+      "DPP-4 inhibitors (e.g., Sitagliptin, Vildagliptin)",
+      "SGLT2 inhibitors (e.g., Dapagliflozin, Empagliflozin)",
+      "GLP-1 receptor agonists (e.g., Liraglutide, Semaglutide)",
+      "Insulin therapy",
+      "Lifestyle modifications (dietary changes, regular exercise)"
+    ]
+  },
+  {
+    "name": "Diapro",
+    "genericName": "Micronized Diosmin + Hesperidin",
+    "manufacturer": "Pacific Pharmaceuticals Ltd.",
+    "uses": [
+      "Chronic venous insufficiency (e.g., heavy legs, pain, restless legs, nocturnal cramps, edema)",
+      "Acute and chronic hemorrhoids",
+      "Varicose veins",
+      "Lymphedema"
+    ],
+    "sideEffects": [
+      "Nausea",
+      "Vomiting",
+      "Diarrhea",
+      "Dyspepsia (indigestion)",
+      "Headache",
+      "Dizziness"
+    ],
+    "fakeIndicators": [
+      "Poor quality packaging with blurry print, incorrect colors, or spelling errors.",
+      "Batch number and expiry date appear inconsistent or tampered with.",
+      "Tablet color, shape, size, or smell differs from the original product.",
+      "Unusually low price compared to the standard market rate.",
+      "Absence of the manufacturer's logo or a valid registration number (e.g., DGDA) on the packaging."
+    ],
+    "safeAlternatives": [
+      "Daflon (Servier, imported)",
+      "Flebon (Incepta Pharmaceuticals Ltd.)",
+      "Venoxil (Square Pharmaceuticals Ltd.)",
+      "Diosven (ACI Limited)",
+      "Venotone (Beximco Pharmaceuticals Ltd.)"
+    ]
+  },
+  {
+    "name": "Maxpro",
+    "genericName": "Esomeprazole",
+    "manufacturer": "Square Pharmaceuticals PLC.",
+    "uses": [
+      "Gastroesophageal Reflux Disease (GERD)",
+      "Healing of erosive esophagitis",
+      "Maintenance of healing of erosive esophagitis",
+      "Symptomatic GERD",
+      "Risk reduction of NSAID-associated gastric ulcer",
+      "H. pylori eradication (in combination with appropriate antibiotics)",
+      "Zollinger-Ellison Syndrome"
+    ],
+    "sideEffects": [
+      "Headache",
+      "Nausea",
+      "Diarrhea",
+      "Abdominal pain",
+      "Constipation",
+      "Flatulence",
+      "Dry mouth"
+    ],
+    "fakeIndicators": [
+      "Poor print quality or blurry text on the packaging.",
+      "Missing or inconsistent batch number, manufacturing date, or expiry date.",
+      "Unusual color, shape, smell, or taste of the tablet/capsule compared to authentic medicine.",
+      "Packaging seal appears broken, tampered with, or of inferior quality.",
+      "Significantly lower price than the market average without a valid reason."
+    ],
+    "safeAlternatives": [
+      "Omeprazole (e.g., Seclo, Losectil)",
+      "Pantoprazole (e.g., Pantop)",
+      "Rabeprazole (e.g., Rabezol)",
+      "Lansoprazole (e.g., Lanzol)"
+    ]
   }
 ]

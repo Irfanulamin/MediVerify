@@ -90,6 +90,17 @@ export default function DashboardPage() {
   }, []);
 
   const switchTab = (next: Mode) => {
+    // The three modes are independent — switching clears the previous mode's
+    // result and in-progress input so a tab never shows another tab's result.
+    // (Alternative-click handlers call this then setQuery + runVerify, which
+    // re-populate after this reset, so that flow still works.)
+    setResult(null);
+    setInvestigation(null);
+    setInvestigationInput(null);
+    setQuery("");
+    setImageFile(null);
+    setImagePreview(null);
+    setShowSuggestions(false);
     setTab(next);
     localStorage.setItem(MODE_KEY, next);
   };
@@ -481,8 +492,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Investigation result */}
-      {investigation && investigationInput && !loading && (
+      {/* Investigation result — only in investigate mode */}
+      {tab === "investigate" && investigation && investigationInput && !loading && (
         <div className="mb-8">
           <InvestigationResultCard
             data={investigation}
@@ -496,8 +507,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Verify result */}
-      {result && !loading && (
+      {/* Verify result — only in quick/image modes */}
+      {(tab === "quick" || tab === "image") && result && !loading && (
         <div className="mb-8">
           {result.extracted_name && (
             <p className="text-sm text-[var(--muted-foreground)] mb-3">
@@ -508,8 +519,8 @@ export default function DashboardPage() {
           <ResultCard
             data={result}
             onAlternativeClick={(name) => {
-              setQuery(name);
               switchTab("quick");
+              setQuery(name);
               runVerify(name);
             }}
           />

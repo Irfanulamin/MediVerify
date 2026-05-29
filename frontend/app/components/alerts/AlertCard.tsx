@@ -129,6 +129,20 @@ export function AlertCard({ alert, currentUserId, onUpvoted }: Props) {
             </span>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleUpvote}
+          disabled={busy}
+          className={`flex flex-col items-center justify-center min-w-[52px] px-2 py-1.5 rounded-xl border transition-smooth ${
+            localUpvotedByMe
+              ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+              : "border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--foreground)]"
+          } ${busy ? "opacity-60 cursor-wait" : ""}`}
+          title={localUpvotedByMe ? t.alerts.removeUpvote : t.alerts.confirmAlert}
+        >
+          <ThumbsUp className="size-4" strokeWidth={localUpvotedByMe ? 2.5 : 1.8} />
+          <span className="text-xs font-semibold tabular-nums">{localUpvotes}</span>
+        </button>
       </div>
       <p className="text-sm text-[var(--foreground)] leading-relaxed">{alert.description}</p>
       {alert.batchNumber && (

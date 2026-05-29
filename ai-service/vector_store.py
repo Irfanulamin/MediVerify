@@ -13,6 +13,7 @@ similarity is converted to a "distance" (1 - score) so existing thresholds still
 
 import os
 import time
+from functools import lru_cache
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -94,8 +95,10 @@ def embed_documents(texts: list[str]) -> list[list[float]]:
     return out
 
 
+@lru_cache(maxsize=1024)
 def embed_query(text: str) -> list[float]:
-    """Embed a single query string with the retrieval_query task type."""
+    """Embed a single query string (cached — verify queries the same name across
+    3 namespaces, so this avoids 2 redundant Gemini embedding calls per lookup)."""
     return _embed_one(text, "retrieval_query")
 
 

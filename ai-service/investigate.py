@@ -359,8 +359,10 @@ Rules:
         return result
     except Exception as e:
         print(f"[Investigate] Gemini unavailable ({e.__class__.__name__}: {str(e)[:120]}), using rule-based fallback")
+        # Degraded (AI down) — do NOT cache, so it retries with full AI analysis
+        # once the rate limit clears.
         result = _investigate_rule_based(norm_data, med_metas, alert_docs, registry)
-        _cache_set(cache_key, result)
+        result["ai_unavailable"] = True
         return result
 
 

@@ -12,14 +12,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const doLogin = async (email: string, password: string) => {
     setError("");
     setLoading(true);
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        form
+        { email, password }
       );
       await axios.post("/api/auth/session", {
         access_token: res.data.access_token,
@@ -38,6 +37,11 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    doLogin(form.email, form.password);
   };
 
   return (
@@ -99,6 +103,34 @@ export default function LoginPage() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
+
+        {/* Demo quick-login */}
+        <div className="flex items-center gap-3 my-6">
+          <div className="h-px flex-1 bg-[var(--border)]" />
+          <span className="text-[11px] uppercase tracking-wider text-[var(--muted-foreground)]">
+            Demo accounts
+          </span>
+          <div className="h-px flex-1 bg-[var(--border)]" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => doLogin("user@test.com", "123456")}
+            className="py-3 rounded-xl text-sm font-medium border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Test as User
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => doLogin("admin@test.com", "123456")}
+            className="py-3 rounded-xl text-sm font-medium border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Test as Admin
+          </button>
+        </div>
       </div>
     </div>
   );
