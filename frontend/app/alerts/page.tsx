@@ -26,7 +26,7 @@ export default function PublicAlertsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<Sort>("latest");
-  const [modalOpen, setModalOpen] = useState(false);
+  const [tab, setTab] = useState<"all" | "report">("all");
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
 
   const FILTERS = useMemo(() => [
@@ -51,7 +51,10 @@ export default function PublicAlertsPage() {
     } finally {
       setLoading(false);
     }
-  }, [alertType, sort, t]);
+  // `t` is intentionally omitted: it only feeds the error toast, and including it
+  // would rebuild fetchAlerts on every language toggle, churning the 30s interval.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alertType, sort]);
 
   useEffect(() => {
     axios
@@ -61,7 +64,9 @@ export default function PublicAlertsPage() {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
+    // `loading` defaults to true, so the skeleton shows only on the very first load.
+    // Filter/sort changes and the 30s background refresh update the list in place
+    // (items are keyed by `_id`, so cards keep their identity and don't re-animate).
     fetchAlerts();
     const id = setInterval(fetchAlerts, 30_000);
     return () => clearInterval(id);
@@ -89,7 +94,7 @@ export default function PublicAlertsPage() {
             </div>
             <button
               type="button"
-              onClick={() => setModalOpen(true)}
+              onClick={() => setTab("report")}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-[var(--foreground)] text-[var(--background)] hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] transition-smooth"
             >
               <Plus className="size-4" />
@@ -98,6 +103,27 @@ export default function PublicAlertsPage() {
           </div>
         </header>
 
+        {/* Tabs */}
+        <div role="tablist" className="inline-flex p-1 rounded-xl border border-[var(--border)] bg-[var(--card)] mb-6">
+          {([["all", t.alerts.tabAllAlerts], ["report", t.alerts.tabReport]] as const).map(([k, label]) => (
+            <button
+              key={k}
+              role="tab"
+              aria-selected={tab === k}
+              onClick={() => setTab(k)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-smooth ${
+                tab === k
+                  ? "bg-[var(--background)] text-[var(--foreground)] shadow-soft"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "all" && (
+          <>
         {/* Filter bar */}
         <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -178,9 +204,11 @@ export default function PublicAlertsPage() {
           <RefreshCcw className="size-3" />
           <span>{t.alerts.refreshing}</span>
         </div>
-      </main>
+          </>
+        )}
 
-      <ReportAlertModal open={modalOpen} onClose={() => setModalOpen(false)} />
+        {tab === "report" && <ReportAlertModal inline />}
+      </main>
     </div>
   );
 }

@@ -13,9 +13,9 @@ export default function ShowcaseSection() {
 
   return (
     <section id="product" className="relative py-28 overflow-hidden border-t border-[var(--border)]">
-      <div className="relative max-w-6xl mx-auto px-6 space-y-28">
+      <div className="relative max-w-7xl mx-auto px-6 space-y-28">
         {/* Row 1 */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-[1fr_1.4fr] gap-12 items-center">
           <motion.div
             initial={reduce ? false : { opacity: 0, x: -24 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -69,18 +69,18 @@ export default function ShowcaseSection() {
             transition={spring}
           >
             <img
-              src="https://picsum.photos/seed/mediverify-pharmacy-bd/1280/800"
-              alt="MediVerify pharmacy verification analytics dashboard"
+              src="/compare.png"
+              alt="MediVerify medicine brand comparison view"
               loading="lazy"
-              width={1280}
-              height={800}
+              width={1128}
+              height={880}
               className="rounded-2xl border border-[var(--border)] shadow-soft w-full object-cover"
             />
           </motion.div>
         </div>
 
         {/* Row 2 */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-12 items-center">
           <motion.div
             initial={reduce ? false : { opacity: 0, x: -24, scale: 0.98 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
@@ -89,12 +89,12 @@ export default function ShowcaseSection() {
             className="relative flex justify-center"
           >
             <img
-              src="https://picsum.photos/seed/mediverify-mobile-scan/768/1024"
-              alt="MediVerify mobile scan result screen"
+              src="/dashboard.png"
+              alt="MediVerify verification dashboard — scan a strip and trust the result"
               loading="lazy"
-              width={768}
-              height={1024}
-              className="rounded-3xl border border-[var(--border)] shadow-soft max-h-[520px] object-cover"
+              width={1669}
+              height={945}
+              className="rounded-3xl border border-[var(--border)] shadow-soft w-full object-cover"
             />
           </motion.div>
 

@@ -77,6 +77,20 @@ def _collect_variants(resolved_generic: str, seed_metas: list[dict]) -> list[dic
     return variants
 
 
+def _dedupe_variants(variants: list[dict]) -> list[dict]:
+    """Drop variants that repeat a brand name (case-insensitive); the LLM occasionally
+    emits the same brand twice, which would render as duplicate columns on the frontend."""
+    seen: set[str] = set()
+    out: list[dict] = []
+    for v in variants:
+        key = _normalise(v.get("brand_name"))
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(v)
+    return out
+
+
 def _variant_summary(meta: dict) -> dict:
     return {
         "brand_name": meta.get("name", ""),
@@ -215,6 +229,8 @@ Rules:
     try:
         raw = _call_gemini(prompt)
         result = json.loads(_clean_json(raw))
+        if isinstance(result.get("variants"), list):
+            result["variants"] = _dedupe_variants(result["variants"])
         result.setdefault("recommendation", {})
         for k in ("best_overall", "most_affordable", "most_available"):
             result["recommendation"].setdefault(k, variant_summaries[0]["brand_name"])

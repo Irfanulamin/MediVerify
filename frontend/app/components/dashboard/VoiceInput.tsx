@@ -1,110 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Mic, MicOff, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import { useVoiceDictation } from "./useVoiceDictation";
 
 interface Props {
+  /** Live transcript (committed + interim) — mirror into the field as the user speaks. */
   onTranscript: (text: string) => void;
+  /** Full transcript when the user explicitly stops — run name extraction here. */
   onSubmit: (text: string) => void;
   extracting?: boolean;
 }
 
-interface SpeechRecognitionEvent {
-  resultIndex: number;
-  results: { length: number; [key: number]: { isFinal: boolean; [key: number]: { transcript: string } } };
-}
-
-interface SpeechRecognitionInstance {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  onresult: ((e: SpeechRecognitionEvent) => void) | null;
-  onend: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognitionInstance;
-    webkitSpeechRecognition: new () => SpeechRecognitionInstance;
-  }
-}
-
-const LANG_KEY = "mv_voice_lang";
-type Lang = "en-US" | "bn-BD";
-
 export function VoiceInput({ onTranscript, onSubmit, extracting = false }: Props) {
   const { t } = useLanguage();
-  const [listening, setListening] = useState(false);
-  const [supported, setSupported] = useState(true);
-  const [interim, setInterim] = useState("");
-  const [lang, setLang] = useState<Lang>("en-US");
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-  const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(LANG_KEY);
-    if (stored === "bn-BD" || stored === "en-US") setLang(stored);
-  }, []);
-
-  useEffect(() => {
-    const SR = window.SpeechRecognition ?? window.webkitSpeechRecognition;
-    if (!SR) {
-      setSupported(false);
-      return;
-    }
-    const rec: SpeechRecognitionInstance = new SR();
-    rec.lang = lang;
-    rec.continuous = true;
-    rec.interimResults = true;
-
-    rec.onresult = (e) => {
-      let final = "";
-      let interimText = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const txt = e.results[i][0].transcript;
-        if (e.results[i].isFinal) final += txt;
-        else interimText += txt;
-      }
-      if (interimText) setInterim(interimText);
-      if (final) {
-        onTranscript(final);
-        setInterim("");
-        if (silenceTimer.current) clearTimeout(silenceTimer.current);
-        silenceTimer.current = setTimeout(() => {
-          rec.stop();
-          setListening(false);
-          onSubmit(final);
-        }, 2000);
-      }
-    };
-
-    rec.onend = () => setListening(false);
-    recognitionRef.current = rec;
-  }, [onTranscript, onSubmit, lang]);
-
-  const toggle = () => {
-    if (!supported) return;
-    if (listening) {
-      recognitionRef.current?.stop();
-      setListening(false);
-      if (silenceTimer.current) clearTimeout(silenceTimer.current);
-    } else {
-      setInterim("");
-      recognitionRef.current?.start();
-      setListening(true);
-    }
-  };
-
-  const swapLang = () => {
-    if (listening) return;
-    const next: Lang = lang === "en-US" ? "bn-BD" : "en-US";
-    setLang(next);
-    localStorage.setItem(LANG_KEY, next);
-  };
+  const { supported, listening, lang, toggle, swapLang } = useVoiceDictation({
+    onText: onTranscript,
+    onFinalize: onSubmit,
+  });
 
   if (!supported) {
     return (
@@ -139,7 +53,7 @@ export function VoiceInput({ onTranscript, onSubmit, extracting = false }: Props
       </button>
       <button
         type="button"
-        onClick={toggle}
+        onClick={() => !extracting && toggle()}
         disabled={extracting}
         title={extracting ? "Extracting medicine name…" : `Voice search (${langLabel})`}
         className={`p-3 rounded-xl border transition-smooth ${
@@ -165,19 +79,6 @@ export function VoiceInput({ onTranscript, onSubmit, extracting = false }: Props
           )}
         </div>
       </button>
-
-      <AnimatePresence>
-        {interim && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            className="absolute top-full mt-2 left-0 right-0 min-w-[200px] glass-card rounded-xl px-3 py-2 text-sm text-[var(--muted-foreground)] whitespace-nowrap"
-          >
-            {interim}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

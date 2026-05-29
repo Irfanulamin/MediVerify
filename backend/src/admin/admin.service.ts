@@ -22,7 +22,7 @@ export class AdminService {
     const [totalUsers, totalMedicines, pendingAlerts, verificationsToday] = await Promise.all([
       this.userModel.countDocuments(),
       this.medicineModel.countDocuments(),
-      this.alertModel.countDocuments({ isVerified: false }),
+      this.alertModel.countDocuments({ status: 'pending' }),
       this.historyModel.countDocuments({ createdAt: { $gte: todayStart } }),
     ]);
 

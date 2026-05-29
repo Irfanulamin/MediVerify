@@ -6,6 +6,9 @@ export type AlertDocument = Alert & Document;
 export const ALERT_TYPES = ['Fake', 'Expired', 'Mislabeled', 'WrongDosage', 'Suspicious'] as const;
 export type AlertType = (typeof ALERT_TYPES)[number];
 
+export const ALERT_STATUSES = ['pending', 'verified', 'rejected'] as const;
+export type AlertStatus = (typeof ALERT_STATUSES)[number];
+
 @Schema({ timestamps: true })
 export class Alert {
   @Prop({ required: true }) medicineName: string;
@@ -15,7 +18,7 @@ export class Alert {
   @Prop({ default: '' }) pharmacyName: string;
   @Prop({ default: '' }) batchNumber: string;
   @Prop({ default: '' }) photoUrl: string;
-  @Prop({ default: false }) isVerified: boolean;
+  @Prop({ type: String, enum: ALERT_STATUSES, default: 'pending' }) status: AlertStatus;
   @Prop({ default: '' }) reportedBy: string;
   @Prop({ type: [Types.ObjectId], ref: 'User', default: [] }) upvotes: Types.ObjectId[];
 }

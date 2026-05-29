@@ -83,6 +83,14 @@ export class AlertsController {
     return this.alertsService.approve(id);
   }
 
+  /** Admin — reject an alert (mark as false alert, keep the record) */
+  @Patch(':id/reject')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  reject(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.alertsService.reject(id);
+  }
+
   /** Admin — delete an alert */
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)

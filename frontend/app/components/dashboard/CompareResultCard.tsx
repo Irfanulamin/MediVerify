@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Info, Award, Baby, UserCircle2, Tag, Sparkles, Copy } from "lucide-react";
 import toast from "react-hot-toast";
@@ -99,7 +100,19 @@ function RecommendationPill({ icon: Icon, label, value, tone, onCopy, title }: {
 
 export function CompareResultCard({ data }: Props) {
   const { t } = useLanguage();
-  const { generic_name, variants, recommendation, comparison_summary } = data;
+  const { generic_name, recommendation, comparison_summary } = data;
+
+  // De-duplicate variants by normalized brand name so the same medicine never
+  // renders as two cards/columns (the LLM occasionally emits a brand twice).
+  const variants = useMemo(() => {
+    const seen = new Set<string>();
+    return (data.variants ?? []).filter((v) => {
+      const key = (v.brand_name || "").trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [data.variants]);
 
   const copy = (val?: string | null) => {
     if (!val) return;

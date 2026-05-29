@@ -1,6 +1,7 @@
 "use client";
 
-import { ShieldCheck, X, Globe, Mail } from "lucide-react";
+import { X, Globe, Mail } from "lucide-react";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n";
 
@@ -13,9 +14,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10">
         <div>
           <div className="flex items-center gap-2 font-medium text-sm text-[var(--foreground)]">
-            <span className="size-7 rounded-lg bg-[var(--foreground)] grid place-items-center flex-shrink-0">
-              <ShieldCheck className="size-4 text-[var(--background)]" strokeWidth={2.5} />
-            </span>
+            <Image src="/logo.png" alt="MediVerify" width={28} height={28} className="flex-shrink-0" />
             MediVerify
           </div>
           <p className="text-sm text-[var(--muted-foreground)] mt-4 max-w-xs leading-relaxed">

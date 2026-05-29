@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Sparkles } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { SearchTipsPopover } from "./SearchTipsPopover";
 import { useLanguage } from "@/lib/i18n";
+import { useVoiceDictation } from "./useVoiceDictation";
 
 export interface InvestigateInput {
   medicine_name: string;
@@ -22,23 +23,6 @@ interface Props {
   onSubmit: (input: InvestigateInput) => void;
 }
 
-const VOICE_LANG_KEY = "mv_voice_lang";
-type VoiceLang = "en-US" | "bn-BD";
-
-interface SpeechRecognitionEvent {
-  resultIndex: number;
-  results: { length: number; [key: number]: { isFinal: boolean; [key: number]: { transcript: string } } };
-}
-interface SpeechRecognitionInstance {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  onresult: ((e: SpeechRecognitionEvent) => void) | null;
-  onend: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-}
-
 export function InvestigationForm({ loading, onSubmit }: Props) {
   const { t } = useLanguage();
   const [form, setForm] = useState({
@@ -50,82 +34,11 @@ export function InvestigationForm({ loading, onSubmit }: Props) {
     pricePaid: "",
   });
   const [prefilled, setPrefilled] = useState<Set<string>>(new Set());
-  const [voiceLang, setVoiceLang] = useState<VoiceLang>("en-US");
-  const [supported, setSupported] = useState(true);
-  const [listening, setListening] = useState(false);
   const [extracting, setExtracting] = useState(false);
-  const [interim, setInterim] = useState("");
-  const recRef = useRef<SpeechRecognitionInstance | null>(null);
-  const transcriptRef = useRef<string>("");
-  const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(VOICE_LANG_KEY);
-    if (stored === "bn-BD" || stored === "en-US") setVoiceLang(stored);
-  }, []);
-
-  useEffect(() => {
-    const SR =
-      (window as unknown as { SpeechRecognition?: new () => SpeechRecognitionInstance }).SpeechRecognition ??
-      (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionInstance }).webkitSpeechRecognition;
-    if (!SR) {
-      setSupported(false);
-      return;
-    }
-    const rec: SpeechRecognitionInstance = new SR();
-    rec.lang = voiceLang;
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.onresult = (e) => {
-      let final = "";
-      let interimText = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const txt = e.results[i][0].transcript;
-        if (e.results[i].isFinal) final += txt;
-        else interimText += txt;
-      }
-      if (interimText) setInterim(interimText);
-      if (final) {
-        transcriptRef.current += " " + final;
-        setInterim("");
-        if (silenceTimer.current) clearTimeout(silenceTimer.current);
-        silenceTimer.current = setTimeout(() => {
-          rec.stop();
-        }, 2000);
-      }
-    };
-    rec.onend = () => {
-      setListening(false);
-      const finalText = transcriptRef.current.trim();
-      transcriptRef.current = "";
-      if (finalText) runExtraction(finalText);
-    };
-    recRef.current = rec;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voiceLang]);
-
-  const swapLang = () => {
-    if (listening) return;
-    const next: VoiceLang = voiceLang === "en-US" ? "bn-BD" : "en-US";
-    setVoiceLang(next);
-    localStorage.setItem(VOICE_LANG_KEY, next);
-  };
-
-  const toggleMic = () => {
-    if (!supported || extracting) return;
-    if (listening) {
-      recRef.current?.stop();
-      setListening(false);
-      if (silenceTimer.current) clearTimeout(silenceTimer.current);
-    } else {
-      transcriptRef.current = "";
-      setInterim("");
-      recRef.current?.start();
-      setListening(true);
-    }
-  };
+  const [liveText, setLiveText] = useState("");
 
   const runExtraction = async (transcript: string) => {
+    setLiveText("");
     setExtracting(true);
     try {
       const res = await axios.post("/api/proxy/extract-from-speech", { transcript });
@@ -154,6 +67,11 @@ export function InvestigationForm({ loading, onSubmit }: Props) {
       setExtracting(false);
     }
   };
+
+  const { supported, listening, lang, toggle, swapLang } = useVoiceDictation({
+    onText: setLiveText,
+    onFinalize: runExtraction,
+  });
 
   const update = (key: keyof typeof form, value: string) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -188,7 +106,7 @@ export function InvestigationForm({ loading, onSubmit }: Props) {
     onSubmit(input);
   };
 
-  const isEn = voiceLang === "en-US";
+  const isEn = lang === "en-US";
 
   return (
     <form onSubmit={handleSubmit} className="glass-card rounded-2xl p-5 space-y-4">
@@ -218,7 +136,7 @@ export function InvestigationForm({ loading, onSubmit }: Props) {
               </button>
               <button
                 type="button"
-                onClick={toggleMic}
+                onClick={() => !extracting && toggle()}
                 disabled={extracting}
                 title={t.dashboard.voiceHint}
                 className={`p-2.5 rounded-xl border transition-smooth relative ${
@@ -251,14 +169,14 @@ export function InvestigationForm({ loading, onSubmit }: Props) {
       </div>
 
       <AnimatePresence>
-        {interim && (
+        {listening && liveText && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             className="rounded-xl border border-dashed border-[var(--border)] px-3 py-2 text-sm text-[var(--muted-foreground)]"
           >
-            {interim}
+            {liveText}
           </motion.div>
         )}
       </AnimatePresence>

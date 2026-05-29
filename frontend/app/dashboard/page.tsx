@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Clock, X, Search, Stethoscope, Camera, ShieldCheck } from "lucide-react";
+import { Upload, Clock, X, Search, Stethoscope, Camera } from "lucide-react";
+import Image from "next/image";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ResultCard } from "@/app/components/dashboard/ResultCard";
@@ -270,9 +271,7 @@ export default function DashboardPage() {
     <div>
       <header className="mb-8">
         <div className="flex items-center gap-3 mb-3">
-          <span className="size-10 rounded-xl bg-[var(--foreground)] grid place-items-center flex-shrink-0">
-            <ShieldCheck className="size-5 text-[var(--background)]" strokeWidth={2.2} />
-          </span>
+          <Image src="/logo.png" alt="MediVerify" width={40} height={40} className="flex-shrink-0" priority />
           <div>
             <h1 className="font-display text-3xl md:text-[2.25rem] tracking-tight text-[var(--foreground)] leading-tight">
               {t.dashboard.verifyHeading}

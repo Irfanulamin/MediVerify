@@ -45,7 +45,7 @@ export default function HeroSection() {
         }}
       />
 
-      <div className="relative max-w-6xl mx-auto px-6 w-full grid lg:grid-cols-[1.1fr_1fr] gap-16 items-center py-24">
+      <div className="relative max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-[1fr_1.25fr] gap-12 items-center py-24">
         <div>
           <motion.div {...fadeUp(0)}>
             <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--background)]/60 px-3 py-1 text-xs text-[var(--muted-foreground)] mb-6">
@@ -182,10 +182,10 @@ export default function HeroSection() {
               <div className="ml-2 flex-1 h-4 rounded bg-[var(--border)] max-w-[200px]" />
             </div>
             <img
-              src="https://picsum.photos/seed/mediverify-dashboard-bd/1280/800"
-              alt="MediVerify verification dashboard showing medicine safety scores and batch details"
-              width={1280}
-              height={800}
+              src="/banner.png"
+              alt="MediVerify — verify medicines before they harm"
+              width={1114}
+              height={796}
               className="rounded-xl w-full object-cover"
               loading="eager"
             />

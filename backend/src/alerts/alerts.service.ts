@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Alert, AlertDocument, AlertType } from './alert.schema';
+import { Alert, AlertDocument, AlertType, AlertStatus } from './alert.schema';
 import { CreateAlertDto } from './dto/create-alert.dto';
 
 const SEED_ALERTS: Array<Partial<Alert>> = [
@@ -12,7 +12,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     pharmacyName: 'Al-Madina Pharmacy',
     description: 'Counterfeit Napa Extra blister without Beximco hologram. Tablet colour slightly off, blister foil tears unusually easily.',
     batchNumber: 'BX2024XXX',
-    isVerified: true,
+    status: 'verified',
   },
   {
     medicineName: 'Ciprofloxacin 500mg',
@@ -20,7 +20,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'New Market, Chittagong',
     pharmacyName: 'City Care Pharmacy',
     description: 'Generic Ciprofloxacin strips with incorrect dosage information — label says 250mg but tablet markings indicate 500mg strength.',
-    isVerified: true,
+    status: 'verified',
   },
   {
     medicineName: 'Insulin Regular',
@@ -28,7 +28,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'Zindabazar, Sylhet',
     pharmacyName: 'Healthline Pharma',
     description: 'Expired insulin vials sold with a sticker over the original expiry date showing a false future date.',
-    isVerified: false,
+    status: 'pending',
   },
   {
     medicineName: 'Omeprazole 20mg',
@@ -36,7 +36,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'Boalia, Rajshahi',
     pharmacyName: 'Popular Drug House',
     description: 'Capsules sold as branded Seclo but contents dissolve immediately on touch — no enteric coating, likely sugar pellets.',
-    isVerified: true,
+    status: 'verified',
   },
   {
     medicineName: 'Azithromycin 250mg',
@@ -44,7 +44,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'Khulna Sadar',
     pharmacyName: 'Sebak Pharmacy',
     description: 'Substandard Azithromycin tablets with uneven coating and spelling errors on packaging. Independent lab test reported only 60% active ingredient.',
-    isVerified: true,
+    status: 'verified',
   },
   {
     medicineName: 'Metformin 500mg',
@@ -52,15 +52,15 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'Rajshahi City',
     pharmacyName: 'Padma Pharmacy',
     description: 'Metformin strips with missing storage instructions and batch number printed in non-standard format. Possibly repackaged from bulk supply.',
-    isVerified: true,
+    status: 'verified',
   },
   {
     medicineName: 'Amlodipine 5mg',
     alertType: 'Suspicious',
     location: 'Ambarkhana, Sylhet',
     pharmacyName: 'Sylhet Medicine Mart',
-    description: 'Tablets feel chalky with no embossed markings; outer pack shows no DGDA registration number.',
-    isVerified: false,
+    description: 'Tablets feel chalky with no embossed markings; outer pack shows no DGDA registration number. Reviewed against the manufacturer batch record and confirmed genuine — marked as a false alert.',
+    status: 'rejected',
   },
   {
     medicineName: 'Amoxicillin 500mg',
@@ -68,7 +68,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'Gulshan, Dhaka',
     pharmacyName: 'Lazz Pharma',
     description: 'Expired Amoxicillin capsules with tampered expiry stickers spotted at a Mirpur wholesale market. Capsule contents show discolouration.',
-    isVerified: true,
+    status: 'verified',
   },
   {
     medicineName: 'Napa Syrup',
@@ -76,7 +76,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'Agrabad, Chittagong',
     pharmacyName: 'Chattogram Health Store',
     description: 'Paediatric paracetamol syrup with measuring spoon marked 5ml but actual capacity is closer to 7ml. Risk of accidental overdose in children.',
-    isVerified: true,
+    status: 'verified',
   },
   {
     medicineName: 'Diazepam 5mg',
@@ -84,7 +84,7 @@ const SEED_ALERTS: Array<Partial<Alert>> = [
     location: 'Banani, Dhaka',
     pharmacyName: 'Care Plus Pharmacy',
     description: 'Diazepam sold without prescription requirement enforcement. Packaging looks legitimate but the pharmacy did not check any documentation.',
-    isVerified: false,
+    status: 'pending',
   },
 ];
 
@@ -100,6 +100,16 @@ export class AlertsService implements OnModuleInit {
   constructor(@InjectModel(Alert.name) private alertModel: Model<AlertDocument>) {}
 
   async onModuleInit() {
+    // Backfill legacy docs created before the `status` enum (idempotent).
+    await this.alertModel.updateMany(
+      { status: { $exists: false }, isVerified: true },
+      { $set: { status: 'verified' }, $unset: { isVerified: '' } },
+    );
+    await this.alertModel.updateMany(
+      { status: { $exists: false } },
+      { $set: { status: 'pending' }, $unset: { isVerified: '' } },
+    );
+
     for (const alert of SEED_ALERTS) {
       await this.alertModel.updateOne(
         {
@@ -118,7 +128,8 @@ export class AlertsService implements OnModuleInit {
     const limit = Math.min(50, Math.max(1, Number(opts.limit) || 20));
     const skip = (page - 1) * limit;
 
-    const query: Record<string, unknown> = { isVerified: true };
+    // Public feed shows all statuses; each card surfaces its status badge.
+    const query: Record<string, unknown> = {};
     if (opts.alertType) query.alertType = opts.alertType;
 
     let cursor;
@@ -159,7 +170,7 @@ export class AlertsService implements OnModuleInit {
       batchNumber: dto.batchNumber ?? '',
       photoUrl: dto.photoUrl ?? '',
       reportedBy: reporterEmail,
-      isVerified: false,
+      status: 'pending' as AlertStatus,
       upvotes: [],
     });
     return alert.save();
@@ -170,13 +181,23 @@ export class AlertsService implements OnModuleInit {
   }
 
   async countVerified() {
-    return { count: await this.alertModel.countDocuments({ isVerified: true }) };
+    return { count: await this.alertModel.countDocuments({ status: 'verified' }) };
   }
 
   async approve(id: string) {
     const alert = await this.alertModel.findByIdAndUpdate(
       id,
-      { isVerified: true },
+      { status: 'verified' },
+      { new: true },
+    );
+    if (!alert) throw new NotFoundException('Alert not found');
+    return alert;
+  }
+
+  async reject(id: string) {
+    const alert = await this.alertModel.findByIdAndUpdate(
+      id,
+      { status: 'rejected' },
       { new: true },
     );
     if (!alert) throw new NotFoundException('Alert not found');

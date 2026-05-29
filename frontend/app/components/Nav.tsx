@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/i18n";
 
@@ -12,9 +12,7 @@ export default function Nav() {
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
       <nav className="glass shadow-soft rounded-2xl flex items-center justify-between gap-4 px-4 py-2.5 w-full max-w-5xl">
         <a href="/" className="flex items-center gap-2 font-medium text-sm flex-shrink-0">
-          <span className="size-7 rounded-lg bg-[var(--foreground)] grid place-items-center flex-shrink-0">
-            <ShieldCheck className="size-4 text-[var(--background)]" strokeWidth={2.5} />
-          </span>
+          <Image src="/logo.png" alt="MediVerify" width={28} height={28} className="flex-shrink-0" priority />
           <span className="tracking-tight text-[var(--foreground)]">MediVerify</span>
         </a>
 
@@ -38,8 +36,8 @@ export default function Nav() {
             </li>
           ))}
           <li>
-            <Link href="/dashboard/alerts" className="hover:text-[var(--foreground)] transition-smooth">
-              {lang === "bn" ? "সতর্কতা" : "Alerts"}
+            <Link href="/alerts" className="hover:text-[var(--foreground)] transition-smooth">
+              {t.dashboard.navAlerts}
             </Link>
           </li>
         </ul>

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, LogOut, Zap, AlertTriangle, Menu, GitCompare } from "lucide-react";
+import Image from "next/image";
 import axios from "axios";
 import { useLanguage } from "@/lib/i18n";
 import { LogoutConfirmModal } from "@/app/components/dashboard/LogoutConfirmModal";
@@ -37,9 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 px-4 py-5 border-b border-[var(--border)]">
-        <span className="size-7 rounded-lg bg-[var(--foreground)] grid place-items-center flex-shrink-0">
-          <ShieldCheck className="size-3.5 text-[var(--background)]" strokeWidth={2.5} />
-        </span>
+        <Image src="/logo.png" alt="MediVerify" width={28} height={28} className="flex-shrink-0" />
         <span className="font-semibold text-sm text-[var(--foreground)]">MediVerify</span>
       </div>
 

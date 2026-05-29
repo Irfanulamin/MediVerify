@@ -5,6 +5,7 @@ import { CheckCircle2, Plus, DatabaseZap } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/i18n";
 
 interface UnverifiedReport {
   _id: string;
@@ -27,6 +28,7 @@ type Tab = "unfound" | "reports";
 
 export default function AdminReportsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [tab, setTab] = useState<Tab>("unfound");
 
   const [reports, setReports] = useState<UnverifiedReport[]>([]);
@@ -46,7 +48,7 @@ export default function AdminReportsPage() {
   const markReviewed = async (id: string) => {
     await axios.patch(`/api/proxy/unverified-reports/${id}`, {});
     setReports((prev) => prev.filter((r) => r._id !== id));
-    toast.success("Marked as reviewed");
+    toast.success(t.admin.reportsMarkedReviewed);
   };
 
   const goAddMedicine = (name: string) => {
@@ -57,8 +59,8 @@ export default function AdminReportsPage() {
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="font-display text-2xl md:text-3xl tracking-tight text-[var(--foreground)]">Reports</h1>
-          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">Unfound medicine searches and user-submitted reports</p>
+          <h1 className="font-display text-2xl md:text-3xl tracking-tight text-[var(--foreground)]">{t.admin.reports}</h1>
+          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">{t.admin.reportsSubtitle}</p>
         </div>
         <div className="flex gap-1 p-1 rounded-xl bg-[var(--card)] border border-[var(--border)]">
           {(["unfound", "reports"] as Tab[]).map((tb) => (
@@ -71,7 +73,7 @@ export default function AdminReportsPage() {
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
-              {tb === "unfound" ? `Not in DB (${unfound.length})` : `User Reports (${reports.length})`}
+              {tb === "unfound" ? `${t.admin.reportsTabUnfound} (${unfound.length})` : `${t.admin.reportsTabReports} (${reports.length})`}
             </button>
           ))}
         </div>
@@ -82,14 +84,14 @@ export default function AdminReportsPage() {
       ) : tab === "unfound" ? (
         unfound.length === 0 ? (
           <div className="glass-card rounded-2xl p-10 text-center text-sm text-[var(--muted-foreground)]">
-            No unfound medicine searches yet.
+            {t.admin.reportsNoUnfound}
           </div>
         ) : (
           <div className="glass-card overflow-x-auto rounded-2xl">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)]">
-                  {["Medicine Name", "Search Count", "Last Searched", "Action"].map((col) => (
+                  {[t.admin.reportsColMedicineName, t.admin.reportsColSearchCount, t.admin.reportsColLastSearched, t.admin.colActions].map((col) => (
                     <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider whitespace-nowrap">{col}</th>
                   ))}
                 </tr>
@@ -107,7 +109,7 @@ export default function AdminReportsPage() {
                         onClick={() => goAddMedicine(item.name)}
                         className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 transition-smooth whitespace-nowrap"
                       >
-                        <Plus className="size-3" /> Add to Database
+                        <Plus className="size-3" /> {t.admin.reportsAddToDatabase}
                       </button>
                     </td>
                   </tr>
@@ -119,14 +121,14 @@ export default function AdminReportsPage() {
       ) : (
         reports.length === 0 ? (
           <div className="glass-card rounded-2xl p-10 text-center text-sm text-[var(--muted-foreground)]">
-            No pending reports.
+            {t.admin.reportsNoReports}
           </div>
         ) : (
           <div className="glass-card overflow-x-auto rounded-2xl">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)]">
-                  {["Medicine", "Manufacturer", "Where Bought", "Notes", "Reported By", "Date", "Actions"].map((col) => (
+                  {[t.admin.colMedicine, t.admin.colManufacturer, t.admin.reportsColWhereBought, t.admin.reportsColNotes, t.admin.reportsColReportedBy, t.admin.colDate, t.admin.colActions].map((col) => (
                     <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider whitespace-nowrap">{col}</th>
                   ))}
                 </tr>
@@ -150,13 +152,13 @@ export default function AdminReportsPage() {
                           onClick={() => goAddMedicine(report.medicineName)}
                           className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 transition-smooth whitespace-nowrap"
                         >
-                          <DatabaseZap className="size-3" /> Add to DB
+                          <DatabaseZap className="size-3" /> {t.admin.reportsAddToDb}
                         </button>
                         <button
                           onClick={() => markReviewed(report._id)}
                           className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-smooth whitespace-nowrap"
                         >
-                          <CheckCircle2 className="size-3" /> Reviewed
+                          <CheckCircle2 className="size-3" /> {t.admin.reportsReviewedAction}
                         </button>
                       </div>
                     </td>

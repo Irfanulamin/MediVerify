@@ -5,9 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ShieldCheck, LayoutDashboard, AlertTriangle, Users,
+  LayoutDashboard, AlertTriangle, Users,
   Database, Menu, Inbox, Bell, LogOut, Search, Settings, Plus,
 } from "lucide-react";
+import Image from "next/image";
 import axios from "axios";
 import { useLanguage } from "@/lib/i18n";
 import { LogoutConfirmModal } from "@/app/components/dashboard/LogoutConfirmModal";
@@ -62,14 +63,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-4 py-5 border-b border-[var(--border)]">
-        <span className="size-7 rounded-lg bg-[var(--accent)] grid place-items-center flex-shrink-0">
-          <ShieldCheck className="size-3.5 text-white" strokeWidth={2.5} />
-        </span>
-        <div>
-          <span className="font-semibold text-sm text-[var(--foreground)] block">MediVerify</span>
-          <span className="text-[10px] text-[var(--muted-foreground)] tracking-wide">{t.admin.analyticsAdmin}</span>
-        </div>
+      <div className="flex items-center gap-1.5 px-4 py-5 border-b border-[var(--border)]">
+        <Image src="/logo.png" alt="MediVerify" width={28} height={28} className="flex-shrink-0" />
+          <p className="font-semibold text-sm text-[var(--foreground)] block">MediVerify</p>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">

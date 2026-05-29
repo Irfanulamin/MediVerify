@@ -102,7 +102,7 @@ function MedicinesContent() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { toast.error("Medicine name is required"); return; }
+    if (!form.name.trim()) { toast.error(t.admin.medNameRequired); return; }
     setSaving(true);
     const payload = {
       name: form.name.trim(), genericName: form.genericName.trim(),
@@ -117,15 +117,15 @@ function MedicinesContent() {
       if (editing) {
         const r = await axios.patch(`/api/proxy/medicines/${editing._id}`, payload);
         setMedicines((prev) => prev.map((m) => (m._id === editing._id ? r.data : m)));
-        toast.success("Medicine updated");
+        toast.success(t.admin.medUpdated);
       } else {
         const r = await axios.post("/api/proxy/medicines", payload);
         setMedicines((prev) => [r.data, ...prev]);
-        toast.success("Medicine added");
+        toast.success(t.admin.medAdded);
       }
       setModalOpen(false);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Save failed");
+      toast.error(err?.response?.data?.message ?? t.admin.medSaveFailed);
     } finally {
       setSaving(false);
     }
@@ -137,10 +137,10 @@ function MedicinesContent() {
     try {
       await axios.delete(`/api/proxy/medicines/${deleteTarget._id}`);
       setMedicines((prev) => prev.filter((m) => m._id !== deleteTarget._id));
-      toast.success("Deleted");
+      toast.success(t.admin.medDeleted);
       setDeleteTarget(null);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Delete failed");
+      toast.error(err?.response?.data?.message ?? t.admin.medDeleteFailed);
     } finally {
       setDeleting(false);
     }
@@ -176,7 +176,7 @@ function MedicinesContent() {
             onClick={() => openAdd()}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-[var(--accent)] text-[var(--accent-foreground)] hover:opacity-90 transition-smooth"
           >
-            <Plus className="size-4" /> Add Medicine
+            <Plus className="size-4" /> {t.admin.medAdd}
           </button>
         </div>
       </div>
@@ -184,7 +184,7 @@ function MedicinesContent() {
       {loading ? (
         <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-14 rounded-xl bg-[var(--card)] animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="glass-card rounded-2xl p-10 text-center text-sm text-[var(--muted-foreground)]">No medicines found.</div>
+        <div className="glass-card rounded-2xl p-10 text-center text-sm text-[var(--muted-foreground)]">{t.admin.noMedicines}</div>
       ) : (
         <div className="glass-card overflow-x-auto rounded-2xl">
           <table className="w-full text-sm">
@@ -202,7 +202,7 @@ function MedicinesContent() {
                   <td className="px-4 py-3 text-[var(--muted-foreground)]">{med.genericName || "—"}</td>
                   <td className="px-4 py-3 text-[var(--muted-foreground)]">{med.manufacturer || "—"}</td>
                   <td className="px-4 py-3 text-[var(--muted-foreground)] tabular-nums">৳{med.price ?? 0}</td>
-                  <td className="px-4 py-3 text-xs text-[var(--muted-foreground)]">{med.requiresPrescription ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3 text-xs text-[var(--muted-foreground)]">{med.requiresPrescription ? t.compare.yes : t.compare.no}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEdit(med)} className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)] transition-smooth">
@@ -237,41 +237,41 @@ function MedicinesContent() {
                   <X className="size-4" />
                 </button>
                 <h2 className="font-semibold text-[var(--foreground)] mb-5">
-                  {editing ? "Edit Medicine" : "Add Medicine"}
+                  {editing ? t.admin.medEdit : t.admin.medAdd}
                 </h2>
                 <div className="space-y-3">
-                  <Field label="Name *">
+                  <Field label={`${t.admin.colName} *`}>
                     <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={inputCls} />
                   </Field>
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Generic Name">
+                    <Field label={t.admin.colGeneric}>
                       <input value={form.genericName} onChange={(e) => setForm((f) => ({ ...f, genericName: e.target.value }))} className={inputCls} />
                     </Field>
-                    <Field label="Manufacturer">
+                    <Field label={t.admin.colManufacturer}>
                       <input value={form.manufacturer} onChange={(e) => setForm((f) => ({ ...f, manufacturer: e.target.value }))} className={inputCls} />
                     </Field>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Price (BDT)">
+                    <Field label={t.admin.colPrice}>
                       <input type="number" min="0" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} className={inputCls} />
                     </Field>
-                    <Field label="Requires Prescription">
+                    <Field label={t.admin.medFieldRequiresRx}>
                       <label className="flex items-center gap-2 mt-1 cursor-pointer">
                         <input type="checkbox" checked={form.requiresPrescription} onChange={(e) => setForm((f) => ({ ...f, requiresPrescription: e.target.checked }))} className="rounded" />
-                        <span className="text-sm text-[var(--foreground)]">Yes</span>
+                        <span className="text-sm text-[var(--foreground)]">{t.compare.yes}</span>
                       </label>
                     </Field>
                   </div>
-                  <Field label="Uses (comma-separated)">
+                  <Field label={t.admin.medFieldUses}>
                     <textarea rows={2} value={form.uses} onChange={(e) => setForm((f) => ({ ...f, uses: e.target.value }))} className={inputCls + " resize-none"} />
                   </Field>
-                  <Field label="Side Effects (comma-separated)">
+                  <Field label={t.admin.medFieldSideEffects}>
                     <textarea rows={2} value={form.sideEffects} onChange={(e) => setForm((f) => ({ ...f, sideEffects: e.target.value }))} className={inputCls + " resize-none"} />
                   </Field>
-                  <Field label="Safe Alternatives (comma-separated)">
+                  <Field label={t.admin.medFieldAlternatives}>
                     <input value={form.safeAlternatives} onChange={(e) => setForm((f) => ({ ...f, safeAlternatives: e.target.value }))} className={inputCls} />
                   </Field>
-                  <Field label="Fake Indicators (comma-separated)">
+                  <Field label={t.admin.medFieldFakeIndicators}>
                     <textarea rows={2} value={form.fakeIndicators} onChange={(e) => setForm((f) => ({ ...f, fakeIndicators: e.target.value }))} className={inputCls + " resize-none"} />
                   </Field>
                   <button
@@ -279,7 +279,7 @@ function MedicinesContent() {
                     disabled={saving}
                     className="w-full px-5 py-3 rounded-xl text-sm font-medium bg-[var(--accent)] text-[var(--accent-foreground)] hover:opacity-90 transition-smooth disabled:opacity-40 mt-2"
                   >
-                    {saving ? "Saving…" : editing ? "Save Changes" : "Add Medicine"}
+                    {saving ? t.admin.medSaving : editing ? t.admin.medSaveChanges : t.admin.medAdd}
                   </button>
                 </div>
               </div>

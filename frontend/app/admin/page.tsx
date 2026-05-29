@@ -27,6 +27,13 @@ interface ActivityItem { type: string; description: string; createdAt: string; }
 
 const PIE_COLORS = ["#6d28d9", "#ef4444", "#14b8a6", "#f59e0b", "#3b82f6"];
 
+// Update state only when the payload actually changed. Returning the previous
+// reference makes React bail out of the re-render, so the 30s background poll
+// does not re-animate the charts when nothing has changed.
+function setIfChanged<T>(setter: (updater: (prev: T) => T) => void, next: T) {
+  setter((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+}
+
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -72,11 +79,11 @@ export default function AdminOverviewPage() {
         axios.get("/api/proxy/admin/analytics/alert-types"),
         axios.get("/api/proxy/admin/activity/recent"),
       ]);
-      if (statsRes.status === "fulfilled") setStats(statsRes.value.data);
-      if (detailRes.status === "fulfilled") setVerificationDetail(detailRes.value.data);
-      if (topRes.status === "fulfilled") setTopMedicines(topRes.value.data);
-      if (alertTypesRes.status === "fulfilled") setAlertTypes(alertTypesRes.value.data);
-      if (activityRes.status === "fulfilled") setActivity(activityRes.value.data);
+      if (statsRes.status === "fulfilled") setIfChanged(setStats, statsRes.value.data);
+      if (detailRes.status === "fulfilled") setIfChanged(setVerificationDetail, detailRes.value.data);
+      if (topRes.status === "fulfilled") setIfChanged(setTopMedicines, topRes.value.data);
+      if (alertTypesRes.status === "fulfilled") setIfChanged(setAlertTypes, alertTypesRes.value.data);
+      if (activityRes.status === "fulfilled") setIfChanged(setActivity, activityRes.value.data);
     } finally {
       setLoading(false);
     }
@@ -113,7 +120,7 @@ export default function AdminOverviewPage() {
   const cards = [
     {
       label: t.admin.totalUsers,
-      value: stats?.totalUsers ?? 0,
+      value: (stats?.totalUsers ?? 0).toLocaleString(),
       icon: Users,
       bg: "bg-blue-50",
       iconColor: "text-blue-600",
@@ -122,7 +129,7 @@ export default function AdminOverviewPage() {
     },
     {
       label: t.admin.verificationsToday,
-      value: stats?.verificationsToday ?? 0,
+      value: (stats?.verificationsToday ?? 0).toLocaleString(),
       icon: ShieldCheck,
       bg: "bg-emerald-50",
       iconColor: "text-emerald-600",
@@ -131,7 +138,7 @@ export default function AdminOverviewPage() {
     },
     {
       label: t.admin.pendingAlerts,
-      value: stats?.pendingAlerts ?? 0,
+      value: (stats?.pendingAlerts ?? 0).toLocaleString(),
       icon: AlertTriangle,
       bg: "bg-red-50",
       iconColor: "text-red-600",
@@ -140,7 +147,7 @@ export default function AdminOverviewPage() {
     },
     {
       label: t.admin.totalMedicines,
-      value: stats?.totalMedicines ?? 0,
+      value: (stats?.totalMedicines ?? 0).toLocaleString(),
       icon: Database,
       bg: "bg-violet-50",
       iconColor: "text-violet-600",
@@ -164,16 +171,6 @@ export default function AdminOverviewPage() {
           <h1 className="font-display text-2xl md:text-3xl tracking-tight text-[var(--foreground)]">
             {t.admin.analyticsDashboard}
           </h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--foreground)] hover:bg-[var(--card)] transition-smooth">
-            <Download className="size-4" />
-            {t.admin.downloadReport}
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-smooth">
-            <PlusCircle className="size-4" />
-            {t.admin.addNewData}
-          </button>
         </div>
       </div>
 

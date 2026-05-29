@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { ShieldCheck } from "lucide-react";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,9 +32,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-16 pt-28">
       <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-soft">
         <div className="flex items-center gap-2 mb-8">
-          <span className="size-8 rounded-lg bg-[var(--foreground)] grid place-items-center flex-shrink-0">
-            <ShieldCheck className="size-4 text-[var(--background)]" strokeWidth={2.5} />
-          </span>
+          <Image src="/logo.png" alt="MediVerify" width={32} height={32} className="flex-shrink-0" priority />
           <span className="font-medium text-sm text-[var(--foreground)]">MediVerify</span>
         </div>
 
