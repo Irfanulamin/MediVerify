@@ -1623,5 +1623,95 @@
       "Augmentin 625mg",
       "Amoxicillin + Clavulanic Acid generic"
     ]
+  },
+  {
+    "name": "Coca Cola",
+    "genericName": "Not applicable (not a medicine); commonly known as a carbonated soft drink.",
+    "manufacturer": "Not a pharmaceutical product. Manufactured by The Coca-Cola Company (global), locally bottled and distributed by Coca-Cola Bangladesh Beverages Limited.",
+    "uses": [
+      "Refreshment and thirst quenching.",
+      "Social beverage for enjoyment.",
+      "Energy boost due to sugar and caffeine content (for regular variants)."
+    ],
+    "sideEffects": [
+      "High sugar intake can contribute to weight gain, dental caries, and increased risk of type 2 diabetes if consumed excessively.",
+      "Caffeine content (in regular Coca-Cola) can lead to jitters, sleep disturbances, or dependency in sensitive individuals.",
+      "Phosphoric acid can potentially impact bone health and dental enamel over very long-term, excessive consumption.",
+      "Gastric discomfort or bloating due to carbonation."
+    ],
+    "fakeIndicators": [
+      "Unusual or inconsistent packaging (e.g., incorrect logo, spelling errors, poor print quality).",
+      "Seal tampering or broken safety seal.",
+      "Abnormal taste, color, or odor compared to genuine product.",
+      "Lack of proper manufacturing and expiration dates or illegible batch codes."
+    ],
+    "safeAlternatives": [
+      "Water (for hydration)",
+      "Fresh fruit juice (in moderation)",
+      "Herbal tea",
+      "Milk",
+      "Other unsweetened or naturally sweetened beverages"
+    ]
+  },
+  {
+    "name": "Momvit",
+    "genericName": "Multivitamin and Multimineral (specifically formulated for pregnancy and lactation)",
+    "manufacturer": "ACME Laboratories Ltd.",
+    "uses": [
+      "Nutritional support during pregnancy and lactation",
+      "Prevention and treatment of iron deficiency anemia",
+      "Prevention of folic acid deficiency",
+      "Supplementation of calcium and vitamin D for bone health",
+      "Overall maternal and fetal well-being"
+    ],
+    "sideEffects": [
+      "Nausea",
+      "Constipation",
+      "Diarrhea",
+      "Stomach upset",
+      "Darkening of stools"
+    ],
+    "fakeIndicators": [
+      "Irregular packaging or printing quality (e.g., blurry text, incorrect logos)",
+      "Unusual taste, smell, or appearance of the tablet",
+      "Absence or alteration of batch number, manufacturing date, and expiry date",
+      "Unusually low price compared to market standards",
+      "Purchasing from unauthorized or suspicious vendors"
+    ],
+    "safeAlternatives": [
+      "Folicap (Square Pharmaceuticals Ltd.)",
+      "Pregnacare (Beximco Pharmaceuticals Ltd.)",
+      "Anacal-M (Incepta Pharmaceuticals Ltd.)"
+    ]
+  },
+  {
+    "name": "D-Rise",
+    "genericName": "Cholecalciferol (Vitamin D3)",
+    "manufacturer": "Square Pharmaceuticals Ltd.",
+    "uses": [
+      "Treatment and prevention of Vitamin D deficiency",
+      "Adjunct therapy in osteoporosis",
+      "Management of rickets and osteomalacia",
+      "Support for bone health and calcium absorption"
+    ],
+    "sideEffects": [
+      "Hypercalcemia (with excessive intake)",
+      "Nausea, vomiting, constipation (rare, usually with overdose)",
+      "Weakness, fatigue, headache",
+      "Increased thirst and frequent urination"
+    ],
+    "fakeIndicators": [
+      "Poor packaging quality (blurred print, mismatched colors, spelling mistakes)",
+      "Missing or incorrect batch number, manufacturing date, or expiry date",
+      "Unusual taste, smell, or appearance of the capsule/tablet",
+      "Absence of manufacturer's hologram or security seal (if applicable)",
+      "Unusually low price compared to market standards"
+    ],
+    "safeAlternatives": [
+      "Ostocal-D (Square Pharmaceuticals)",
+      "Calbo-D (Beximco Pharmaceuticals)",
+      "D-Vita (ACI Pharmaceuticals)",
+      "Sun-D (Renata Limited)"
+    ]
   }
 ]

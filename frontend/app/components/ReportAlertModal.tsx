@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ChevronDown, Check } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -12,11 +12,13 @@ interface Props {
   /** Modal mode */
   open?: boolean;
   onClose?: () => void;
-  /** Inline mode — render the form bare (no overlay), e.g. as a page tab */
+  /** Inline mode — render the form bare (no overlay), e.g. as a page section */
   inline?: boolean;
+  /** Called after a successful submission (e.g. to refetch the list) */
+  onSubmitted?: () => void;
 }
 
-export function ReportAlertModal({ open = false, onClose, inline = false }: Props) {
+export function ReportAlertModal({ open = false, onClose, inline = false, onSubmitted }: Props) {
   const { t } = useLanguage();
   const [form, setForm] = useState({
     medicineName: "",
@@ -28,6 +30,8 @@ export function ReportAlertModal({ open = false, onClose, inline = false }: Prop
   });
   const [submitting, setSubmitting] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [typeOpen, setTypeOpen] = useState(false);
+  const typeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!inline && !open) return;
@@ -36,6 +40,25 @@ export function ReportAlertModal({ open = false, onClose, inline = false }: Prop
       .catch(() => setIsLoggedIn(false));
   }, [open, inline]);
 
+  // Close the custom type dropdown when clicking outside it.
+  useEffect(() => {
+    if (!typeOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (typeRef.current && !typeRef.current.contains(e.target as Node)) setTypeOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [typeOpen]);
+
+  const ALERT_TYPE_OPTIONS = [
+    { value: "Fake", label: t.alerts.typeFake, dot: "bg-red-500" },
+    { value: "Expired", label: t.alerts.typeExpired, dot: "bg-orange-500" },
+    { value: "Mislabeled", label: t.alerts.typeMislabeled, dot: "bg-amber-500" },
+    { value: "WrongDosage", label: t.alerts.filterWrongDosage, dot: "bg-purple-500" },
+    { value: "Suspicious", label: t.alerts.filterSuspicious, dot: "bg-slate-500" },
+  ];
+  const selectedType = ALERT_TYPE_OPTIONS.find((o) => o.value === form.alertType) ?? ALERT_TYPE_OPTIONS[0];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -43,6 +66,7 @@ export function ReportAlertModal({ open = false, onClose, inline = false }: Prop
       await axios.post("/api/proxy/alerts", form);
       toast.success(t.alerts.reportModalSuccess);
       setForm({ medicineName: "", alertType: "Fake", pharmacyName: "", location: "", description: "", batchNumber: "" });
+      onSubmitted?.();
       onClose?.();
     } catch {
       toast.error(t.alerts.reportModalFailed);
@@ -91,17 +115,64 @@ export function ReportAlertModal({ open = false, onClose, inline = false }: Prop
             <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
               {t.alerts.reportModalType}
             </label>
-            <select
-              value={form.alertType}
-              onChange={(e) => setForm((f) => ({ ...f, alertType: e.target.value }))}
-              className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
-            >
-              <option value="Fake">{t.alerts.typeFake}</option>
-              <option value="Expired">{t.alerts.typeExpired}</option>
-              <option value="Mislabeled">{t.alerts.typeMislabeled}</option>
-              <option value="WrongDosage">{t.alerts.filterWrongDosage}</option>
-              <option value="Suspicious">{t.alerts.filterSuspicious}</option>
-            </select>
+            <div className="relative" ref={typeRef}>
+              <button
+                type="button"
+                onClick={() => setTypeOpen((o) => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={typeOpen}
+                className={`w-full flex items-center justify-between gap-2 pl-3 pr-3 py-2.5 rounded-xl border bg-[var(--background)] text-[var(--foreground)] text-sm transition-smooth ${
+                  typeOpen
+                    ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/20"
+                    : "border-[var(--border)] hover:border-[var(--accent)]/60"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className={`size-2 rounded-full ${selectedType.dot}`} />
+                  {selectedType.label}
+                </span>
+                <ChevronDown className={`size-4 text-[var(--muted-foreground)] transition-transform ${typeOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {typeOpen && (
+                  <motion.ul
+                    role="listbox"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute z-30 mt-1.5 w-full p-1 rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-soft"
+                  >
+                    {ALERT_TYPE_OPTIONS.map((opt) => {
+                      const active = opt.value === form.alertType;
+                      return (
+                        <li key={opt.value} role="option" aria-selected={active}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setForm((f) => ({ ...f, alertType: opt.value }));
+                              setTypeOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-sm transition-smooth ${
+                              active
+                                ? "bg-[var(--accent)]/10 text-[var(--foreground)] font-medium"
+                                : "text-[var(--muted-foreground)] hover:bg-[var(--card)] hover:text-[var(--foreground)]"
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className={`size-2 rounded-full ${opt.dot}`} />
+                              {opt.label}
+                            </span>
+                            {active && <Check className="size-4 text-[var(--accent)]" />}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <div>

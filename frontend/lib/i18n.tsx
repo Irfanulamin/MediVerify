@@ -380,6 +380,10 @@ const translations = {
       falseAlert: "False alert",
       tabAllAlerts: "All alerts",
       tabReport: "Report an alert",
+      awaitingVerification: "Awaiting admin verification",
+      statusAll: "All",
+      reportPanelTitle: "Report an alert",
+      reportPanelSubtitle: "Submit a report. An admin will review and verify it.",
     },
     admin: {
       overview: "Overview",
@@ -873,6 +877,10 @@ const translations = {
       falseAlert: "ভুয়া সতর্কতা",
       tabAllAlerts: "সব সতর্কতা",
       tabReport: "সতর্কতা জানান",
+      awaitingVerification: "অ্যাডমিন যাচাইয়ের অপেক্ষায়",
+      statusAll: "সব",
+      reportPanelTitle: "সতর্কতা জানান",
+      reportPanelSubtitle: "একটি রিপোর্ট জমা দিন। একজন অ্যাডমিন এটি পর্যালোচনা ও যাচাই করবেন।",
     },
     admin: {
       overview: "সারসংক্ষেপ",

@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { href: "/dashboard", label: t.dashboard.navVerify, icon: ShieldCheck },
     { href: "/dashboard/interactions", label: t.dashboard.navInteractions, icon: Zap },
-    { href: "/alerts", label: t.dashboard.navAlerts, icon: AlertTriangle },
+    { href: "/dashboard/alerts", label: t.dashboard.navAlerts, icon: AlertTriangle },
     { href: "/dashboard/compare", label: t.dashboard.navCompare, icon: GitCompare },
   ];
 

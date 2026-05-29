@@ -69,19 +69,19 @@ def seed_medicines() -> int:
 
     if ids:
         medicines_collection.add(ids=ids, documents=documents, metadatas=metadatas)
-        print(f"Seeded {len(ids)} new medicines into ChromaDB")
+        print(f"Seeded {len(ids)} new medicines into Pinecone")
     else:
-        print("No new medicines to seed (all already in ChromaDB)")
+        print("No new medicines to seed (all already in Pinecone)")
 
     count = medicines_collection.count()
-    print(f"Total medicines in ChromaDB: {count}")
+    print(f"Total medicines in Pinecone: {count}")
     return count
 
 
 def seed_monographs() -> int:
     if monographs_collection.count() > 0:
         count = monographs_collection.count()
-        print(f"ChromaDB drug_monographs already seeded ({count}). Skipping.")
+        print(f"Pinecone drug_monographs already seeded ({count}). Skipping.")
         return count
 
     data_path = DATA_DIR / "drug_monographs.json"
@@ -120,14 +120,14 @@ def seed_monographs() -> int:
 
     monographs_collection.add(ids=ids, documents=documents, metadatas=metadatas)
     count = monographs_collection.count()
-    print(f"Seeded {count} drug monographs into ChromaDB")
+    print(f"Seeded {count} drug monographs into Pinecone")
     return count
 
 
 def seed_fake_alerts() -> int:
     if alerts_collection.count() > 0:
         count = alerts_collection.count()
-        print(f"ChromaDB fake_alerts already seeded ({count}). Skipping.")
+        print(f"Pinecone fake_alerts already seeded ({count}). Skipping.")
         return count
 
     data_path = DATA_DIR / "fake_alerts.json"
@@ -163,5 +163,5 @@ def seed_fake_alerts() -> int:
 
     alerts_collection.add(ids=ids, documents=documents, metadatas=metadatas)
     count = alerts_collection.count()
-    print(f"Seeded {count} fake alerts into ChromaDB")
+    print(f"Seeded {count} fake alerts into Pinecone")
     return count

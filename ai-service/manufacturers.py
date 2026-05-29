@@ -1,18 +1,16 @@
-"""Manufacturer registry: ChromaDB-backed lookup of registered BD pharma companies."""
+"""Manufacturer registry: Pinecone-backed lookup of registered BD pharma companies."""
 
 import json
 from pathlib import Path
 
-from rag import _client, _embedding_fn, _query_collection
+from rag import _query_collection
+from vector_store import make_collection
 
 DATA_PATH = Path(__file__).parent / "data" / "manufacturers.json"
 
 MANUFACTURER_MATCH_THRESHOLD = 0.3
 
-manufacturers_collection = _client.get_or_create_collection(
-    name="manufacturer_registry",
-    embedding_function=_embedding_fn,
-)
+manufacturers_collection = make_collection("manufacturer_registry")
 
 
 def _slug(name: str) -> str:
@@ -81,7 +79,7 @@ def seed_manufacturers() -> int:
 
     if ids:
         manufacturers_collection.add(ids=ids, documents=documents, metadatas=metadatas)
-        print(f"[Registry] Seeded {len(ids)} new manufacturers into ChromaDB")
+        print(f"[Registry] Seeded {len(ids)} new manufacturers into Pinecone")
     else:
         print("[Registry] No new manufacturers to seed (all already present)")
 

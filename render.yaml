@@ -1,0 +1,29 @@
+# Render Blueprint — MediVerify NestJS backend (free web service).
+# Deploy: Render Dashboard → New → Blueprint → pick this repo.
+# The AI service is NOT here — it runs on Hugging Face Spaces (see ai-service/README.md).
+services:
+  - type: web
+    name: mediverify-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: node dist/main
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Render injects PORT automatically; main.ts reads process.env.PORT.
+      - key: MONGODB_URI
+        sync: false        # set in dashboard (Atlas connection string)
+      - key: JWT_SECRET
+        sync: false        # must be >= 32 chars
+      - key: INTERNAL_SECRET
+        sync: false        # must match the HF Space's INTERNAL_SECRET
+      - key: AI_SERVICE_URL
+        sync: false        # https://<user>-mediverify-ai.hf.space
+      - key: PYTHON_SERVICE_URL
+        sync: false        # same HF Space URL as AI_SERVICE_URL
+      - key: FRONTEND_URL
+        sync: false        # the Vercel URL, for CORS

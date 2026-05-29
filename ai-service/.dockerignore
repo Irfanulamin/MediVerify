@@ -1,0 +1,12 @@
+# Never ship local secrets or heavy/regenerated artifacts into the image.
+.env
+.env.*
+venv/
+__pycache__/
+*.pyc
+*.log
+*.err
+# ChromaDB is rebuilt from data/ seeds on startup — don't bake a stale store in.
+chroma_db/
+openspec/
+.git/

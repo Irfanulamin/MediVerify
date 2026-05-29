@@ -6,9 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import chromadb
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 import google.generativeai as genai
+from vector_store import make_collection
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 if GEMINI_API_KEY:
@@ -45,21 +44,10 @@ def _name_matches(input_name: str, candidate_name: str, distance: float) -> bool
 def _names_equal(a: str, b: str) -> bool:
     return (a or "").strip().lower() == (b or "").strip().lower()
 
-_embedding_fn = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
-_client = chromadb.PersistentClient(path="./chroma_db")
-
-medicines_collection = _client.get_or_create_collection(
-    name="medicines",
-    embedding_function=_embedding_fn,
-)
-monographs_collection = _client.get_or_create_collection(
-    name="drug_monographs",
-    embedding_function=_embedding_fn,
-)
-alerts_collection = _client.get_or_create_collection(
-    name="fake_alerts",
-    embedding_function=_embedding_fn,
-)
+# Pinecone-backed collections (one namespace each) — see vector_store.py.
+medicines_collection = make_collection("medicines")
+monographs_collection = make_collection("drug_monographs")
+alerts_collection = make_collection("fake_alerts")
 
 collection = medicines_collection
 
@@ -212,7 +200,7 @@ def _query_collection(col, text: str, n_results: int = 5) -> tuple[list, list, l
             good_dists.append(dist)
 
     print(f"[RAG] Querying for: {text!r} | Collection: {col.name}")
-    print(f"[RAG] ChromaDB hits: {len(good_docs)} | Best distance: {best:.4f}")
+    print(f"[RAG] Pinecone hits: {len(good_docs)} | Best distance: {best:.4f}")
 
     return good_docs, good_metas, good_dists
 

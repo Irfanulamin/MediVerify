@@ -129,24 +129,15 @@ export function AlertCard({ alert, currentUserId, onUpvoted }: Props) {
             </span>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleUpvote}
-          disabled={busy}
-          className={`flex flex-col items-center justify-center min-w-[52px] px-2 py-1.5 rounded-xl border transition-smooth ${
-            localUpvotedByMe
-              ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-              : "border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--foreground)]"
-          } ${busy ? "opacity-60 cursor-wait" : ""}`}
-          title={localUpvotedByMe ? t.alerts.removeUpvote : t.alerts.confirmAlert}
-        >
-          <ThumbsUp className="size-4" strokeWidth={localUpvotedByMe ? 2.5 : 1.8} />
-          <span className="text-xs font-semibold tabular-nums">{localUpvotes}</span>
-        </button>
       </div>
       <p className="text-sm text-[var(--foreground)] leading-relaxed">{alert.description}</p>
       {alert.batchNumber && (
         <p className="text-xs text-[var(--muted-foreground)] mt-2 font-mono">{t.alerts.batchPrefix}: {alert.batchNumber}</p>
+      )}
+      {alert.status === "pending" && (
+        <p className="inline-flex items-center gap-1 mt-3 text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+          <Clock className="size-3" /> {t.alerts.awaitingVerification}
+        </p>
       )}
     </motion.div>
   );

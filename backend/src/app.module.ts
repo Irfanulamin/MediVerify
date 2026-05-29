@@ -12,6 +12,8 @@ import { VerificationHistoryModule } from './verification-history/verification-h
 import { SavedMedicinesModule } from './saved-medicines/saved-medicines.module';
 import { UsersModule } from './users/users.module';
 import { UnverifiedReportsModule } from './unverified-reports/unverified-reports.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -31,5 +33,7 @@ import { UnverifiedReportsModule } from './unverified-reports/unverified-reports
     UsersModule,
     UnverifiedReportsModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

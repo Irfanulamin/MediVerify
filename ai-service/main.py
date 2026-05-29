@@ -10,7 +10,6 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-from seed import seed_medicines, seed_monographs, seed_fake_alerts, seed_manufacturers
 from rag import (
     medicines_collection,
     monographs_collection,
@@ -31,15 +30,9 @@ BACKEND_ORIGIN = os.environ.get("BACKEND_ORIGIN", "http://localhost:3001")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    med_count = seed_medicines()
-    mono_count = seed_monographs()
-    alert_count = seed_fake_alerts()
-    mfr_count = seed_manufacturers()
-    print("MediVerify AI Service Ready")
-    print(f"  Medicines:       {med_count}")
-    print(f"  Drug monographs: {mono_count}")
-    print(f"  Fake alerts:     {alert_count}")
-    print(f"  Manufacturers:   {mfr_count}")
+    # Data lives permanently in Pinecone — no per-boot seeding (run seed_pinecone.py
+    # once after deploy). This keeps serverless cold starts fast.
+    print("MediVerify AI Service ready (Pinecone vector store)")
     yield
 
 

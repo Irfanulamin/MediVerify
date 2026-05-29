@@ -27,12 +27,14 @@ export class AlertsController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('alertType') alertType?: string,
+    @Query('status') status?: string,
     @Query('sort') sort?: 'latest' | 'upvotes',
   ) {
     return this.alertsService.findAll({
       page: Number(page),
       limit: Number(limit),
       alertType: alertType || undefined,
+      status: status || undefined,
       sort: sort === 'upvotes' ? 'upvotes' : 'latest',
     });
   }

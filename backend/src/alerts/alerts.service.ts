@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Alert, AlertDocument, AlertType, AlertStatus } from './alert.schema';
+import { Alert, AlertDocument, AlertType, AlertStatus, ALERT_STATUSES } from './alert.schema';
 import { CreateAlertDto } from './dto/create-alert.dto';
 
 const SEED_ALERTS: Array<Partial<Alert>> = [
@@ -92,6 +92,7 @@ interface FindAllOptions {
   page?: number;
   limit?: number;
   alertType?: string;
+  status?: string;
   sort?: 'latest' | 'upvotes';
 }
 
@@ -129,8 +130,19 @@ export class AlertsService implements OnModuleInit {
     const skip = (page - 1) * limit;
 
     // Public feed shows all statuses; each card surfaces its status badge.
+    // The optional `status` filter narrows the feed to one status; unknown
+    // values are ignored so a stale/garbage query never breaks the page.
     const query: Record<string, unknown> = {};
     if (opts.alertType) query.alertType = opts.alertType;
+    if (opts.status && (ALERT_STATUSES as readonly string[]).includes(opts.status)) {
+      query.status = opts.status;
+    }
+
+    // Per-status counts honour the alertType filter but ignore the status
+    // filter, so every segment can show its own total at once.
+    const countBase: Record<string, unknown> = {};
+    if (opts.alertType) countBase.alertType = opts.alertType;
+    const counts = await this.statusCounts(countBase);
 
     let cursor;
     if (opts.sort === 'upvotes') {
@@ -145,7 +157,7 @@ export class AlertsService implements OnModuleInit {
         ])
         .exec();
       const total = await this.alertModel.countDocuments(query);
-      return { items, page, limit, total };
+      return { items, page, limit, total, counts };
     }
 
     cursor = this.alertModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
@@ -153,7 +165,16 @@ export class AlertsService implements OnModuleInit {
       cursor.lean(),
       this.alertModel.countDocuments(query),
     ]);
-    return { items, page, limit, total };
+    return { items, page, limit, total, counts };
+  }
+
+  private async statusCounts(base: Record<string, unknown>) {
+    const [verified, pending, rejected] = await Promise.all([
+      this.alertModel.countDocuments({ ...base, status: 'verified' }),
+      this.alertModel.countDocuments({ ...base, status: 'pending' }),
+      this.alertModel.countDocuments({ ...base, status: 'rejected' }),
+    ]);
+    return { all: verified + pending + rejected, verified, pending, rejected };
   }
 
   findAllAdmin() {

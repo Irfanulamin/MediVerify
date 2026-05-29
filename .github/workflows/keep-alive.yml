@@ -1,0 +1,24 @@
+name: keep-alive
+
+# Pings the backend (Render) and AI service (HF Space) every ~10 minutes so the
+# free hosts don't idle-spindown. Set BACKEND_URL and AI_URL as repo secrets:
+#   Settings → Secrets and variables → Actions → New repository secret
+#     BACKEND_URL = https://mediverify-backend.onrender.com
+#     AI_URL      = https://<user>-mediverify-ai.hf.space
+#
+# Note: GitHub cron can be delayed several minutes under load, and scheduled
+# workflows are auto-disabled after 60 days of no repo activity. For rock-solid
+# pinging, also/instead add these URLs to https://cron-job.org or UptimeRobot.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend /health
+        run: curl -fsS --max-time 60 "${{ secrets.BACKEND_URL }}/health" || echo "backend ping failed (cold start?)"
+      - name: Ping AI service /health
+        run: curl -fsS --max-time 120 "${{ secrets.AI_URL }}/health" || echo "ai ping failed (cold start?)"
